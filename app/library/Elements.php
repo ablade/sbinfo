@@ -9,7 +9,6 @@ use Phalcon\Mvc\User\Component;
  */
 class Elements extends Component
 {
-
     private $_headerMenu = array(
         'navbar-left' => array(
             'project' => array(

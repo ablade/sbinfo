@@ -35,6 +35,7 @@
             <th>Name</th>
             <th>Username</th>
 			<th>Email</th>
+			<th>Password</th>
 			<th>Edit</th>
             <th>Delete</th>
         </tr>
@@ -45,6 +46,7 @@
             <td>{{ user.name }}</td>
             <td>{{ user.username }}</td>
             <td>{{ user.email }}</td>
+            <td>{{ user.decryptPassword() }} </td>
             <td width="7%">{{ link_to("user/edit/" ~ user.id, '<i class="glyphicon glyphicon-edit"></i> Edit', "class": "btn btn-default") }}</td>
             <td width="7%">{{ link_to("user/delete/" ~ user.id, '<i class="glyphicon glyphicon-remove"></i> Delete', "class": "btn btn-default") }}</td>
          </tr>

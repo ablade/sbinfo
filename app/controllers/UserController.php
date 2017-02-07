@@ -67,6 +67,10 @@ class UserController extends ControllerBase
 			"page"  => $numberPage
 		));
 		$this->view->page = $paginator->getPaginate(); 
+//echo app/library/Elements::b64("what's up");//$this->$loader->getNameSpaces();//Elements::testerer('Whats going on');
+//        $hey = \Elements::b64("ajfda;lj adlfjk");
+        //print_r($hey);
+//		$this->view->setVar("aaaa", $hey);//app/library/Elements::b64("what's up"));//$this->$loader->getNameSpaces();//Elements::testerer('Whats going on');
     }
 
 	public function newAction()
@@ -96,6 +100,7 @@ class UserController extends ControllerBase
             $user->active = 'Y';
 			$user->role = $role;
 			$user->company_id = $companyId;
+			$user->encryptPassword($password);
             if ($user->save() == false) {
                 foreach ($user->getMessages() as $message) {
                     $this->flash->error((string) $message);
@@ -189,6 +194,7 @@ class UserController extends ControllerBase
 			elseif($password and $repeatPassword)
 			{
 				$user->password = password_hash($password, PASSWORD_DEFAULT);
+				$user->encryptPassword($password);
 			}
 
 			//Update the user

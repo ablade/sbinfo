@@ -32,9 +32,13 @@
 {% endif %}
 
 <h4 style="align-center">Which Project are you supporting?</h4>
+
+<div id="noSelectAlert" class="alert alert-danger">
+  You did choose select a project.
+</div>
 {% for project in myprojects %}
     {% if loop.first %}
-<table class="table table-bordered table-striped" align="center">
+<table id="selectionTable" class="table table-bordered table-striped" align="center">
     <thead>
         <tr>
             <th>Project Name</th>
@@ -46,8 +50,10 @@
     </thead>
     <tbody>
     {% endif %}
-        <tr style="cursor: pointer;" onclick="location.pathname ='/air/siteboss/index/{{project.id}}';">
-            <td>{{ project.name }}</td>
+        <tr>
+            <td style="cursor: pointer;" onclick="utilsProject.getSelected(this);" pid="{{project.id}}">
+              {{ project.name }}
+            </td>
         {% if role == 'A' %}
             <td width="7%">{{ link_to("project/edit/" ~ project.id, '<i class="glyphicon glyphicon-edit"></i> Edit', "class": "btn btn-default") }}</td>
             <td width="7%">{{ link_to("project/delete/" ~ project.id, '<i class="glyphicon glyphicon-remove"></i> Delete', "class": "btn btn-default") }}</td>
@@ -58,4 +64,4 @@
     Try searching for less characters.
 {% endfor %}
 </table>
-<h4>Choose your Project</h4>
+<button class="btn" onclick="utilsProject.gotoSelectedId('siteboss','index');">Choose your Project</button>

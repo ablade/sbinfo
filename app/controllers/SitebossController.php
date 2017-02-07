@@ -299,12 +299,35 @@ class SitebossController extends ControllerBase
             );
     }
     
-    public function controlAction($id)
+    public function controlAction($id, $btn)
     {
         $mySb = Siteboss::query()->where('id = :pid:')
 								 ->bind(['pid' => $id])
 								 ->execute();
-        $this->view->setVar('sbName', $mySb[0]->SiteName);
+        $this->view->setVar('sbName', $mySb[0]);
+        //$this->view->
+        //$hey = $this->testerer();
+        /*
+        $click = strtolower($btn);
+        switch($click)
+        {
+			case 'details':
+			print_r($btn);
+			break;
+			case "photo":
+			print_r($btn);
+			break;
+			case "notes":
+			print_r($btn);			
+			break;
+			case "complete":
+			print_r($btn);			
+			break;
+			default:
+			print_r("hello default");			
+		}
+        echo $hey;
+        */ 
 				
     }
 }

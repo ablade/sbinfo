@@ -64,7 +64,38 @@ var SignUp = {
     }
 }
 
+var utilsProject =
+{
+	getSelected : function(that)
+	{
+		$(".selected").removeClass("selected");
+		that.classList.add("selected");
+		$("#noSelectAlert").hide();
+		return;
+	},
+	
+	gotoSelectedId : function(controller, action)
+	{
+		var sel = $(".selected");
+		if(sel[0])
+		{
+			window.location = '/'+controller+'/'+action+'/' + sel[0].getAttribute("pid");
+		}else
+		{
+			$("#noSelectAlert").show();
+		}
+		
+	},
+	
+	gotoLocation(path)
+	{
+		window.location = path;
+	}
+}
+
 $(document).ready(function () {
     $("#registerForm .alert").hide();
     $("div.profile .alert").hide();
+    $("#noSelectAlert").hide();
+    $('#sbdetails').hide();
 });

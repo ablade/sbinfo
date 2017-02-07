@@ -31,7 +31,7 @@
 
 {% for siteboss in page.items %}
     {% if loop.first %}
-<table class="table table-bordered table-striped" align="center">
+<table id="selectionTable" class="table table-bordered table-striped" align="center">
     <thead>
         <tr>
             <th>Site Number / Name </th>
@@ -39,9 +39,10 @@
     </thead>
     <tbody>
     {% endif %}
-        <tr style="cursor: pointer;" onclick="location.pathname ='/air/siteboss/control/{{siteboss.id}}';">
-            <td>{{ siteboss.ProjectCode }} - {{ siteboss.SiteName }}</td>
-         </tr>
+        <tr>
+			<td style="cursor: pointer;" onclick="utilsProject.getSelected(this);" pid="{{siteboss.id}}">
+				{{ siteboss.ProjectCode }} - {{ siteboss.SiteName }}</td>
+        </tr>
     {% if loop.last %}
     </tbody>
 	{#
@@ -65,3 +66,5 @@
 	<br>
     Try searching for less characters.
 {% endfor %}
+
+<button class="btn" onclick="utilsProject.gotoSelectedId('siteboss','control');">Edit Selected Site</button>
