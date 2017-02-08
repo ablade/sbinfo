@@ -38,6 +38,11 @@ class Elements extends Component
             'action' => 'index',
             'any' => false
         ),
+        'Siteboss' => array(
+            'controller' => 'siteboss',
+            'action' => 'index',
+            'any' => true
+        ),
         'Companies' => array(
             'controller' => 'company',
             'action' => 'index',

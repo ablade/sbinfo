@@ -1,11 +1,11 @@
 {{ content() }}
-<h3 align="center"> {{ projectname }}</h3>
-{{ form("siteboss/search") }}
+<h3 align="center"> {{ project123.name }}</h3>
+<form action="/siteboss/index/{{ project123.id }}" method="post">
 <div class="container">
 	<div class="row">
            <div id="custom-search-input">
 				<div class="input-group col-md-12">
-					<input id="site-search-str" name="proj-search-str" type="text" class="  search-query form-control" placeholder="Search" />
+					<input id="site-search-str" name="site-search-str" type="text" class="  search-query form-control" placeholder="Search" />
 					<span class="input-group-btn">
 						<button class="btn btn-primary" type="submit">
 							<span class=" glyphicon glyphicon-search"></span>
@@ -23,7 +23,7 @@
     </li>
     {% if role == 'A' %}
     <li class="next">
-        {{ link_to("products/new", "Create products") }}
+        {{ link_to("siteboss/new", "Create New SiteBoss") }}
     </li>
     {% endif %}
 </ul>
@@ -35,13 +35,21 @@
     <thead>
         <tr>
             <th>Site Number / Name </th>
-        </tr>
+       {% if role == 'A' %}
+			<th>Edit</th>
+			<th>Delete</th>
+       {% endif %}
+       </tr>
     </thead>
     <tbody>
     {% endif %}
         <tr>
 			<td style="cursor: pointer;" onclick="utilsProject.getSelected(this);" pid="{{siteboss.id}}">
 				{{ siteboss.ProjectCode }} - {{ siteboss.SiteName }}</td>
+			        {% if role == 'A' %}
+            <td width="7%">{{ link_to("siteboss/edit/" ~ siteboss.id, '<i class="glyphicon glyphicon-edit"></i> Edit', "class": "btn btn-default") }}</td>
+            <td width="7%">{{ link_to("siteboss/delete/" ~ siteboss.id, '<i class="glyphicon glyphicon-remove"></i> Delete', "class": "btn btn-default") }}</td>
+        {% endif %}
         </tr>
     {% if loop.last %}
     </tbody>

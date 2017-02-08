@@ -97,5 +97,4 @@ $(document).ready(function () {
     $("#registerForm .alert").hide();
     $("div.profile .alert").hide();
     $("#noSelectAlert").hide();
-    $('#sbdetails').hide();
 });

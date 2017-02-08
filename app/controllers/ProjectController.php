@@ -27,7 +27,6 @@ class ProjectController extends ControllerBase
 		$auth = $this->session->get('auth');			
 		$myQuery = Project::query()->limit(100); 
 		$params = array(); //Parameters to bind to avoid SQL injections
-		$numberPage = 1;
 		if($auth['role'] === 'U' ) //Filter for Admin or regular User
 		{
 			$myQuery->where('company_id = :thecid:');
@@ -62,9 +61,6 @@ class ProjectController extends ControllerBase
 				
 			}
 			//$this->persistent->searchParams = $myQuery->getParams();
-		}else
-		{
-			$numberPage = $this->request->getQuery("page", "int");
 		}
 	
 		$projects = $myQuery->bind($params)->execute();
@@ -72,15 +68,8 @@ class ProjectController extends ControllerBase
 			$this->flash->notice("The search did not find any projects");
 
 			return;
-			/*
-			 $this->dispatcher->forward(
-				[
-					"controller" => "products",
-					"action"     => "index",
-				]
-			);
-			* */
 		}
+		
 		$this->view->myprojects = $projects; 
     }
 

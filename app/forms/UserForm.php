@@ -43,7 +43,7 @@ class UserForm extends Form
         $this->add($name);
 
 		$rrole = new Select(
-			"reg_role",
+			"role",
 			[
 				"U" => "Installer",
 				"A" => "Admin",

@@ -24,22 +24,29 @@ class SitebossController extends ControllerBase
     public function indexAction($pid)
     {
 		$auth = $this->session->get('auth');
-		
-		if($pid and is_numeric($pid)) //must always have an argument
-		{   			
-			$params['pid'] = $pid;
-			$myQuery = Project::query()->where('id = :pid:');
-			if($auth['role'] !== 'A') //Filter for Admin or regular User
+		$mySb;
+		$sbQuery = Siteboss::query();
+		$params;
+		$project;
+		if($auth['role'] === 'A')
+		{
+			$sbQuery->limit(100);
+			$this->view->setVar("role",'A');	
+			if($pid and is_numeric($pid))
 			{
-					$params['cid'] = $auth['cid'];
-					$myQuery->andwhere('company_id = :cid:');
-					$this->view->setVar("role",'U');
-			}else
-			{
-					$this->view->setVar("role",'A');
-			}
-										
-			$project = $myQuery->bind($params)->execute();
+				$myQuery = Project::query()->where('id = :pid:');
+				$project = $myQuery->bind(['pid' => $pid])->execute();
+			}	
+		}elseif($pid and is_numeric($pid)) //must always have an argument
+		{  
+				//$params['pid'] = $pid;
+				//$params['cid'] = $auth['cid'];
+				$this->view->setVar("role",'U');
+				$myQuery = Project::query()->where('id = :pid:');
+				$myQuery->andwhere('company_id = :cid:');					
+				//$project = $myQuery->bind($params)->execute();
+				$project = $myQuery->bind(['pid' => $pid, 'cid' => $auth['cid']])->execute();
+				
 				
 			if (count($project) == 0) {
 				$this->flash->notice("Contact Admin to access this Project");
@@ -48,38 +55,20 @@ class SitebossController extends ControllerBase
 					[
 						"controller" => "project",
 						"action"     => "index",
-					]
-				);
-			}else
+					]);
+			}
+			else
 			{
-				
-				$mySB = Siteboss::query()->where('project_id = :pid:')
-											->bind(['pid' => $pid])
-											->execute();
-									
-				if (count($mySB) == 0) {
-					$this->flash->notice("No SiteBoss found for this project");
-
-					return;
-					/*
-					 $this->dispatcher->forward(
-						[
-							"controller" => "products",
-							"action"     => "index",
-						]
-					);
-					* */
-				}
-				$numberPage = 1;
-				$paginator = new Paginator(array(
-					"data"  => $mySB,
-					"limit" => 10,
-					"page"  => $numberPage
-				));
-				$this->view->page = $paginator->getPaginate(); 	
-				//echo $project[0]->name;
-				$this->view->setVar("projectname", $project[0]->name);
-			}								
+				$sbQuery->andwhere('project_id = :pid:');
+				if (!$this->request->isPost()) 
+				{
+					$sbQuery->bind(['pid' => $pid]);	
+				}else
+				{
+					$params['pid'] = $pid;
+				}			
+			}
+											
 			
 		}else
 		{
@@ -91,6 +80,51 @@ class SitebossController extends ControllerBase
 				]
 			);
 		}
+		
+		if ($this->request->isPost()) 
+		{
+			$search = $this->request->getPost("site-search-str");
+			if($search)
+			{
+				$filter = new Filter();
+				$words = explode(" ", $search);
+				$filterArray = array();
+				foreach( $words as $word)
+				{
+					$sanitized = $filter->sanitize($word,"alphanum");
+					if($sanitized)
+					{
+						array_push($filterArray, $sanitized);
+					}
+				}
+				
+				$sanSearch = implode(" ", $filterArray);
+				$params['nid'] = '%' . $sanSearch . '%';
+				$sbQuery->andwhere('SiteName LIKE :nid: OR ProjectCode LIKE :nid:');
+				$sbQuery->bind($params);
+					
+			}
+		}
+		
+		
+		
+		$mySB = $sbQuery->execute();
+		
+		if (count($mySB) == 0) {
+			$this->flash->notice("No SiteBoss found for this project");
+			return;
+		}
+		
+		$numberPage = 1;
+		$paginator = new Paginator(array(
+			"data"  => $mySB,
+			"limit" => 10,
+			"page"  => $numberPage
+		));
+		$this->view->page = $paginator->getPaginate(); 	
+		//echo $project[0]->name;
+		$this->view->setVar("project123", $project[0]);
+		
     }
 
     /**
@@ -98,6 +132,7 @@ class SitebossController extends ControllerBase
      */
     public function newAction()
     {
+		
         $this->view->form = new SitebossForm(null, array('edit' => true));
     }
 
@@ -109,19 +144,19 @@ class SitebossController extends ControllerBase
 
         if (!$this->request->isPost()) {
 
-            $product = Products::findFirstById($id);
-            if (!$product) {
-                $this->flash->error("Product was not found");
+            $sb = Siteboss::findFirstById($id);
+            if (!$sb) {
+                $this->flash->error("Siteboss was not found");
 
                 return $this->dispatcher->forward(
                     [
-                        "controller" => "products",
+                        "controller" => "siteboss",
                         "action"     => "index",
                     ]
                 );
             }
 
-            $this->view->form = new ProductsForm($product, array('edit' => true));
+            $this->view->form = new SitebossForm($sb, array('edit' => true));
         }
     }
 
@@ -133,37 +168,37 @@ class SitebossController extends ControllerBase
         if (!$this->request->isPost()) {
             return $this->dispatcher->forward(
                 [
-                    "controller" => "products",
+                    "controller" => "Siteboss",
                     "action"     => "index",
                 ]
             );
         }
 
-        $form = new ProductsForm;
-        $product = new Products();
+        $form = new SitebossForm;
+        $siteboss = new Siteboss();
 
         $data = $this->request->getPost();
-        if (!$form->isValid($data, $product)) {
+        if (!$form->isValid($data, $siteboss)) {
             foreach ($form->getMessages() as $message) {
                 $this->flash->error($message);
             }
 
             return $this->dispatcher->forward(
                 [
-                    "controller" => "products",
+                    "controller" => "Siteboss",
                     "action"     => "new",
                 ]
             );
         }
 
-        if ($product->save() == false) {
+        if ($siteboss->save() == false) {
             foreach ($product->getMessages() as $message) {
                 $this->flash->error($message);
             }
 
             return $this->dispatcher->forward(
                 [
-                    "controller" => "products",
+                    "controller" => "siteboss",
                     "action"     => "new",
                 ]
             );
@@ -171,11 +206,11 @@ class SitebossController extends ControllerBase
 
         $form->clear();
 
-        $this->flash->success("Product was created successfully");
+        $this->flash->success("Siteboss was created successfully");
 
         return $this->dispatcher->forward(
             [
-                "controller" => "products",
+                "controller" => "siteboss",
                 "action"     => "index",
             ]
         );
@@ -191,7 +226,7 @@ class SitebossController extends ControllerBase
         if (!$this->request->isPost()) {
             return $this->dispatcher->forward(
                 [
-                    "controller" => "products",
+                    "controller" => "siteboss",
                     "action"     => "index",
                 ]
             );
@@ -199,45 +234,45 @@ class SitebossController extends ControllerBase
 
         $id = $this->request->getPost("id", "int");
 
-        $product = Products::findFirstById($id);
-        if (!$product) {
-            $this->flash->error("Product does not exist");
+        $sb = Siteboss::findFirstById($id);
+        if (!$sb) {
+            $this->flash->error("Siteboss does not exist");
 
             return $this->dispatcher->forward(
                 [
-                    "controller" => "products",
+                    "controller" => "siteboss",
                     "action"     => "index",
                 ]
             );
         }
 
-        $form = new ProductsForm;
+        $form = new SitebossForm;
         $this->view->form = $form;
 
         $data = $this->request->getPost();
 
-        if (!$form->isValid($data, $product)) {
+        if (!$form->isValid($data, $sb)) {
             foreach ($form->getMessages() as $message) {
                 $this->flash->error($message);
             }
 
             return $this->dispatcher->forward(
                 [
-                    "controller" => "products",
+                    "controller" => "siteboss",
                     "action"     => "edit",
                     "params"     => [$id]
                 ]
             );
         }
 
-        if ($product->save() == false) {
-            foreach ($product->getMessages() as $message) {
+        if ($sb->save() == false) {
+            foreach ($sb->getMessages() as $message) {
                 $this->flash->error($message);
             }
 
             return $this->dispatcher->forward(
                 [
-                    "controller" => "products",
+                    "controller" => "siteboss",
                     "action"     => "edit",
                     "params"     => [$id]
                 ]
@@ -246,11 +281,11 @@ class SitebossController extends ControllerBase
 
         $form->clear();
 
-        $this->flash->success("Product was updated successfully");
+        $this->flash->success("Siteboss was updated successfully");
 
         return $this->dispatcher->forward(
             [
-                "controller" => "products",
+                "controller" => "siteboss",
                 "action"     => "index",
             ]
         );
@@ -264,36 +299,36 @@ class SitebossController extends ControllerBase
     public function deleteAction($id)
     {
 
-        $products = Products::findFirstById($id);
-        if (!$products) {
-            $this->flash->error("Product was not found");
+        $sb = Siteboss::findFirstById($id);
+        if (!$sb) {
+            $this->flash->error("Siteboss was not found");
 
             return $this->dispatcher->forward(
                 [
-                    "controller" => "products",
+                    "controller" => "siteboss",
                     "action"     => "index",
                 ]
             );
         }
 
-        if (!$products->delete()) {
-            foreach ($products->getMessages() as $message) {
+        if (!$sb->delete()) {
+            foreach ($sb->getMessages() as $message) {
                 $this->flash->error($message);
             }
 
             return $this->dispatcher->forward(
                 [
-                    "controller" => "products",
-                    "action"     => "search",
+                    "controller" => "siteboss",
+                    "action"     => "index",
                 ]
             );
         }
 
-        $this->flash->success("Product was deleted");
+        $this->flash->success("Siteboss was deleted");
 
             return $this->dispatcher->forward(
                 [
-                    "controller" => "products",
+                    "controller" => "siteboss",
                     "action"     => "index",
                 ]
             );
@@ -330,4 +365,12 @@ class SitebossController extends ControllerBase
         */ 
 				
     }
+    
+    public function takephotoAction($sid)
+    {
+		
+		echo 'The siteboss id "' . $sid ;
+		//Get sb with id and get project_id
+		//If role U project exist with p_id and c_id good
+	}
 }
