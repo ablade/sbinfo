@@ -21,7 +21,7 @@ class Project extends Model
 	/**
 	 * @var string
 	 */	
-	public $project_id;
+	public $projectcode;
 
 	public $active;
 

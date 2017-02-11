@@ -56,7 +56,7 @@ class ProjectController extends ControllerBase
 				}
 				
 				$sanSearch = implode(" ", $filterArray);
-				$myQuery->andwhere('name LIKE :nid: OR project_id LIKE :nid:');
+				$myQuery->andwhere('name LIKE :nid: OR projectcode LIKE :nid:');
 				$params['nid'] = '%' . $sanSearch . '%';
 				
 			}
@@ -119,7 +119,8 @@ class ProjectController extends ControllerBase
      */
     public function newAction()
     {
-        $this->view->form = new ProjectForm(null, array('edit' => true));
+        //$this->view->form = new ProjectForm(null, array('edit' => true));
+        $this->view->form = new ProjectUploadForm(null, array('edit' => true));
     }
 
     /**
@@ -142,7 +143,8 @@ class ProjectController extends ControllerBase
                 );
             }
 
-            $this->view->form = new ProjectForm($project, array('edit' => true));
+            //$this->view->form = new ProjectForm($project, array('edit' => true));
+			$this->view->form = new ProjectUploadForm($project, array('edit' => true));
         }
     }
 
@@ -160,7 +162,8 @@ class ProjectController extends ControllerBase
             );
         }
 
-        $form = new ProjectForm;
+        //$form = new ProjectForm;
+        $form = new ProjectUploadForm;
         $project = new Project();
         $project->active = 'Y';
 
@@ -234,7 +237,8 @@ class ProjectController extends ControllerBase
             );
         }
 
-        $form = new ProjectForm;
+        //$form = new ProjectForm;
+        $form = new ProjectUploadForm;
         $this->view->form = $form;
 
         $data = $this->request->getPost();
@@ -324,5 +328,44 @@ class ProjectController extends ControllerBase
                     "action"     => "index",
                 ]
             );
+    }
+    
+    
+    
+    public function pcodeAjaxAction($qstring)
+    {                              
+		$pCode = Project::query()->columns(['projectcode'])
+								 ->andwhere('projectcode LIKE :qstr:')
+								 ->bind(['qstr' => $qstring . '%'])
+		                         ->order('projectcode')
+		                         ->limit(10)
+		                         ->execute();
+		                              
+		//$this->view->disable();
+
+        //Create a response instance
+        $response = new \Phalcon\Http\Response();
+
+        //Set the content of the response
+        $response->setContent(json_encode($pCode));
+
+        //Return the response
+        return $response;
+	}
+	
+	    /**
+     * Shows the form to create a new project
+     */
+    public function uploadAction()
+    {
+		
+		$pCode = Project::query()->columns(['projectcode'])
+		                         ->order('projectcode')
+		                         ->limit(10)
+		                         ->execute();
+		                        
+		$this->view->pCode = $pCode;
+		
+        $this->view->form = new ProjectUploadForm(null, array('edit' => true));
     }
 }

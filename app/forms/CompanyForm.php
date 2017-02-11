@@ -23,7 +23,7 @@ class CompanyForm extends Form
         }
 
         $name = new Text("name");
-        $name->setLabel("Name");
+        $name->setLabel("Vendor Name");
         $name->setFilters(array('striptags', 'string'));
         $name->addValidators(array(
             new PresenceOf(array(
@@ -32,6 +32,16 @@ class CompanyForm extends Form
         ));
         $this->add($name);
 
+		$name = new Text('vendor_code',['oninput' => 'company.getVendorCode(this);']);
+        $name->setLabel("Vendor Code");
+        $name->setFilters(array('striptags', 'string', 'upper'));
+        $name->addValidators(array(
+            new PresenceOf(array(
+                'message' => 'Vendor Code is required and cannot be a duplicate'
+            ))
+        ));
+        $this->add($name);
+        
         $telephone = new Text("telephone");
         $telephone->setLabel("Telephone");
         $telephone->setFilters(array('striptags', 'string'));
@@ -43,7 +53,7 @@ class CompanyForm extends Form
         $this->add($telephone);
 
         $address = new Text("address");
-        $address->setLabel("address");
+        $address->setLabel("Address");
         $address->setFilters(array('striptags', 'string'));
         $address->addValidators(array(
             new PresenceOf(array(
@@ -53,7 +63,7 @@ class CompanyForm extends Form
         $this->add($address);
 
         $city = new Text("city");
-        $city->setLabel("city");
+        $city->setLabel("City");
         $city->setFilters(array('striptags', 'string'));
         $city->addValidators(array(
             new PresenceOf(array(

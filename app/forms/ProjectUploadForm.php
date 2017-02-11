@@ -8,7 +8,7 @@ use Phalcon\Validation\Validator\PresenceOf;
 use Phalcon\Validation\Validator\Email;
 use Phalcon\Validation\Validator\Numericality;
 
-class ProjectForm extends Form
+class ProjectUploadForm extends Form
 {
 
     /**
@@ -24,8 +24,21 @@ class ProjectForm extends Form
             $this->add(new Hidden("id"));
         }
 
+		$projectId = new Text("projectcode",['oninput' => 'project.getProjectCode(this);']);
+        $projectId->setLabel("New Project Code");
+        $projectId->setFilters(array('int'));
+        $projectId->addValidators(array(
+            new PresenceOf(array(
+                'message' => 'Project Code is required'
+            )),
+            new Numericality(array(
+                'message' => 'Project Code is required'
+            ))
+        ));
+        $this->add($projectId);
+        
         $name = new Text("name");
-        $name->setLabel("Name");
+        $name->setLabel("Descriptive Name");
         $name->setFilters(array('striptags', 'string'));
         $name->addValidators(array(
             new PresenceOf(array(
@@ -40,21 +53,9 @@ class ProjectForm extends Form
             'emptyText'  => '...',
             'emptyValue' => ''
         ));
-        $companies->setLabel('Company');
+        $companies->setLabel('Vendor Name');
         $this->add($companies);
 
-        $projectId = new Text("projectcode");
-        $projectId->setLabel("Project Id");
-        $projectId->setFilters(array('striptags', 'string','upper'));
-        $projectId->addValidators(array(
-            new PresenceOf(array(
-                'message' => 'Project Code is required'
-            ))
-            /*,
-            new Numericality(array(
-                'message' => 'Project Code not numberic'
-            ))*/
-        ));
-        $this->add($projectId);
+
     }
 }

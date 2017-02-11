@@ -93,8 +93,76 @@ var utilsProject =
 	}
 }
 
+var company =
+{
+	getVendorCode : function(that)
+	{
+		var xhttp = new XMLHttpRequest();
+		var q = that.value;
+		xhttp.open('GET','/company/vcodeAjax/'+q,true);
+		xhttp.responseType = "json";
+		xhttp.onload = function(oEvent)
+		{
+			company.updateVendorCode(xhttp.response);
+		}
+		
+		xhttp.send();	
+	},
+	
+	updateVendorCode : function(response)
+	{
+		var output = '';
+		for(i=0; i < response.length; i++)
+		{
+			output += '<tr><td>' + (response[i].vendor_code).toUpperCase() + '</td><td>' + response[i].name + '</td></tr>'; 
+		}
+		var tbody = document.querySelector('body > div > div > table > tbody');
+		tbody.innerHTML = output;	
+	}
+	
+	
+	
+	
+}
+
+var project =
+{
+	getProjectCode : function(that)
+	{
+		debugger;
+		var xhttp = new XMLHttpRequest();
+		var q = that.value;
+		xhttp.open('GET','/project/pcodeAjax/'+q,true);
+		xhttp.responseType = "json";
+		xhttp.onload = function(oEvent)
+		{
+			project.updateProjectCode(xhttp.response);
+		}
+		
+		xhttp.send();	
+	},
+	
+	updateProjectCode : function(response)
+	{
+		debugger;
+		var output = '';
+		for(i=0; i < response.length; i++)
+		{
+			output += '<tr><td>' + (response[i].projectcode).toUpperCase() + '</td></tr>'; 
+		}
+		var tbody = document.querySelector('body > div > div > table > tbody');
+		tbody.innerHTML = output;	
+	}
+	
+	
+	
+	
+}
+
+
 $(document).ready(function () {
     $("#registerForm .alert").hide();
     $("div.profile .alert").hide();
     $("#noSelectAlert").hide();
 });
+

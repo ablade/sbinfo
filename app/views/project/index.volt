@@ -24,7 +24,9 @@
     <li class="previous">
         {{ link_to("project", "Go Back") }}
     </li>
-
+    <li class="previous">
+        {{ link_to("project/upload", "Upload New Project") }}
+    </li>
     <li class="next">
         {{ link_to("project/new", "Create New Project") }}
     </li>

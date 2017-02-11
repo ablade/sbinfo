@@ -7,7 +7,7 @@
 
 {{ form("company/search") }}
 
-<h2>Search companies</h2>
+<h2>Search Vendor</h2>
 
 <fieldset>
 

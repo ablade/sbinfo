@@ -1,7 +1,7 @@
 {{ content() }}
 
-{{ form("project/create") }}
 
+{{ form("project/upload") }}
     <fieldset>
     {% for element in form %}
         {% if is_a(element, 'Phalcon\Forms\Element\Hidden') %}
@@ -22,8 +22,29 @@
             {{ link_to("project", "&larr; Go Back") }}
         </li>
         <li class="pull-right">
-            {{ submit_button("Save", "class": "btn btn-success") }}
+            {{ submit_button("Upload", "class": "btn btn-success") }}
         </li>
     </ul>
 
 </form>
+
+{% for pc in pCode %}
+	{% if loop.first %}
+<table class="table table-bordered table-striped" align="center">
+    <thead>
+        <tr>
+            <th>List of Existing Project Codes</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% endif %}
+        <tr>
+            <td>{{ pc.projectcode |upper}}</td> 
+		</tr>
+	{% if loop.last %}
+    </tbody>
+</table>
+    {% endif %}
+{% endfor %}
+
+

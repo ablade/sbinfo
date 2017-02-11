@@ -8,6 +8,11 @@ class Company extends Model
      * @var integer
      */
     public $id;
+    
+        /**
+     * @var string
+     */
+    public $vendor_code;
 
     /**
      * @var string
