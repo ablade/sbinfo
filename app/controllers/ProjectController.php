@@ -609,17 +609,7 @@ class ProjectController extends ControllerBase
     {
 		if ($this->request->isPost()) 
 		{
-		require_once dirname(__FILE__) . '/../Classes/PHPExcel/IOFactory.php';
-		//Check if its a post
-		//If its a post check that required fieds are good
-		    //$projectCode = $this->request->getPost('projectcode', array('string', 'striptags','upper'));
-            //$description = $this->request->getPost('name', array('string', 'striptags'));
-			//$companyId = $this->request->getPost('company_id');
-			
-			//if(empty($projectCode) || empty($description) || empty($companyId))
-			//{
-			//	echo 'There are missing fields that are required';
-			//	echo 'Project Code : ' .$projectCode . '  Description : ' . $description . '  Company Id : ' .  $companyId;
+			require_once dirname(__FILE__) . '/../Classes/PHPExcel/IOFactory.php';
 			$form = new ProjectUploadForm;
 			$project = new Project();
 			$project->active = 'Y';
@@ -635,8 +625,7 @@ class ProjectController extends ControllerBase
 					]
 				);
 			}else
-			{ ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-				
+			{
 				// There should only by one file so lets validate
 				foreach ($this->request->getUploadedFiles() as $file) 
 				{
@@ -655,168 +644,126 @@ class ProjectController extends ControllerBase
 					$inputFileType = PHPExcel_IOFactory::identify($inputFile);
 					$objReader = PHPExcel_IOFactory::createReader($inputFileType);
 					$objPHPExcel21 = $objReader->load($inputFile);
-					$siteInfo = $objPHPExcel21->getSheetByName("sites"); //Final check if the spreadsheet has a sheet with "sites" as a title
-					
+					$siteInfo = $objPHPExcel21->getSheetByName("sites"); 
+					//Final check if the spreadsheet has a sheet with "sites" as a title
+					//lets create a project and add the sitebosses
 					if($siteInfo)
 					{
-						
-						//Lets create a project
-						/*
-						    $form = new ProjectUploadForm;
-							$project = new Project();
-							$project->active = 'Y';
-
-							$data = $this->request->getPost();
-							if (!$form->isValid($data, $project)) {
-								foreach ($form->getMessages() as $message) {
+						try{
+							if ($project->save() == false) {
+								foreach ($project->getMessages() as $message) {
 									$this->flash->error($message);
 								}
-
+								return $this->dispatcher->forward(
+									[
+										"controller" => "project",
+										"action"     => "uploadsheet",
+									]
+								);
+							}else
+							{ //We have a project now lets attached the new siteboss to this
+								$siteboss = new Siteboss();
+								//Get the keys/colums for the database
+								$sbArray = array_keys($siteboss->toArray());
+								$validKeyArray = array(); //Use this as a holder for valid keys
+								//Get the header if its a valid field map it value = valid or invalid
+								$header = $siteInfo->getRowIterator(1)->current();
+								$cellIterator = $header->getCellIterator();
+								$cellIterator->setIterateOnlyExistingCells(true); //Goes to column max if false gets null values if true;
+								$rowSaved = 0;
+								foreach ($cellIterator as $key=>$cell) {
+									if (!is_null($cell)) {
+										$value = $cell->getCalculatedValue();
+										if(in_array($value, $sbArray))
+										{
+											$validKeyArray[$key] = $value;
+										}else
+										{
+											$validKeyArray[$key] = 'invalid';
+										}								
+									}
+								}
+								
+								//The second row should contain data that pretains to the siteboss table in the db
+								$rowIterator = $siteInfo->getRowIterator(2);
+								
+								foreach($rowIterator as $row)
+								{ //for each row save it to the database
+									$rowcellIter = $row->getCellIterator();
+									$rowcellIter->setIterateOnlyExistingCells(true);
+									$modArray = new ArrayObject();//array();
+									foreach($rowcellIter as $in=>$va)
+									{//We add this to the database
+										if($validKeyArray[$in] !== 'invalid')
+										{
+											$modArray[$validKeyArray[$in]] = $va;
+										}
+									}
+									
+									//Set the project id and project code to the project we just created.
+									//In the future we might have to check the value of id and project code.
+									$modArray['project_id'] = $project->id;
+									$modArray['ProjectCode'] = $project->projectcode;
+									
+									//PDO might be faster but for now just loop to the columns and save the siteboss info
+									$siteboss = new Siteboss();
+									$siteboss->setWithArray($modArray->getArrayCopy());
+									try
+									{
+										//$copy = $modArray->getArrayCopy();
+										if($siteboss->save() == true)
+										{
+											$rowSaved++;
+											//echo '<br>A siteboss was saved</br>';
+										}
+										
+									} catch (Exception $e){
+											echo $e->getMessage() . '<br>';
+											//echo '<pre>' . $e->getTraceAsString() . '</pre>';
+									}
+																			
+								}
+								//Success
+								$total = $siteInfo->getHighestRow() - 1;
+								$message = 'Successful save ' . $rowSaved 
+								. ' out of ' . $total . 'row/s in the file to Project: ' 
+								. $project->name;
+								$this->flash->success($message);
 								return $this->dispatcher->forward(
 									[
 										"controller" => "project",
 										"action"     => "index",
 									]
 								);
-							}
-						*/
-							try{
-								if ($project->save() == false) {
-									foreach ($project->getMessages() as $message) {
-										$this->flash->error($message);
-									}
-
-									return $this->dispatcher->forward(
-										[
-											"controller" => "project",
-											"action"     => "uploadsheet",
-										]
-									);
-								}else
-								{ //We have a project now lets display the project_id
-									echo 'The project id is : ' . $project->id;
-									$siteboss = new Siteboss();
-									//Get the keys/colums for the database
-									$sbArray = array_keys($siteboss->toArray());//array_keys($siteboss);
-									$sheetArray = array(); //Use this as a holder for valid keys
-									//Get the header if its a valid field map it value = valid or invalid
-									$header = $siteInfo->getRowIterator(1)->current();
-									$cellIterator = $header->getCellIterator();
-									$cellIterator->setIterateOnlyExistingCells(true); //Goes to column max if false goes to not null if true;
-									//foreach ($siteInfo->getRowIterator() as $row) {							
-									foreach ($cellIterator as $key=>$cell) {
-										if (!is_null($cell)) {
-											$value = $cell->getCalculatedValue();
-											if(in_array($value, $sbArray))//$this->_sbColums))
-											{
-												$sheetArray[$key] = $value;
-											}else
-											{
-												$sheetArray[$key] = 'invalid';
-											}								
-										}
-									}
-									
-									$rowIterator = $siteInfo->getRowIterator(2);
-									$countrow = 0;
-									foreach($rowIterator as $row)
-									{ //for each row save it to the database
-										$countrow++;
-										echo '<br>Inside rowIterator</br>';
-										$rowcellIter = $row->getCellIterator();
-										$rowcellIter->setIterateOnlyExistingCells(true);
-										$modArray = new ArrayObject();//array();
-										foreach($rowcellIter as $in=>$va)
-										{//We add this to the database
-											if($sheetArray[$in] !== 'invalid')
-											{
-												$modArray[$sheetArray[$in]] = $va;
-											}
-										}
-										
-										$modArray['project_id'] = $project->id;
-										$modArray['ProjectCode'] = $project->projectcode;
-										$siteboss = new Siteboss();
-										
-										$siteboss->setWithArray($modArray->getArrayCopy());
-										try
-										{
-											//$copy = $modArray->getArrayCopy();
-											if($siteboss->save() == true)
-											{
-												echo '<br>A siteboss was saved</br>';
-											}
-										} catch (Exception $e){
-												echo $e->getMessage() . '<br>';
-												//echo '<pre>' . $e->getTraceAsString() . '</pre>';
-										}										
-									}									
-								}		
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-							
-						} catch (Exception $e){
-									echo '<br>' .$e->getMessage() . '<br>';
-									//echo '<pre>' . $e->getTraceAsString() . '</pre>';
-						}
-										 
-					 
-				}else
-				{
-					$message = 'The XLSL file is not a valid.  File needs to have a sheet name "sites" (case-sensitive)';
-					$this->flash->error($message);
-					return $this->dispatcher->forward(
-							[
-								"controller" => "project",
-								"action"     => "uploadsheet",
-							]
-						);
-					
-				}
+																
+							}		
+	
+					   } catch (Exception $e){ //Project wasn't saved
+								echo '<br>' .$e->getMessage() . '<br>';
+								//echo '<pre>' . $e->getTraceAsString() . '</pre>';
+					   } 
+					}else
+					{
+						$message = 'The XLSL file is not a valid.  File needs to have a sheet name "sites" (case-sensitive)';
+						$this->flash->error($message);
+						return $this->dispatcher->forward(
+								[
+									"controller" => "project",
+									"action"     => "uploadsheet",
+								]
+							);	
+					}
 			
-			}///.For Loop
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-			} ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			
-		//Check that the file attached is the right format etc.
-		//Create the project - Show id
+				}//For Loop			
+			} //else valid
 		}else
 		{
-			$pCode = Project::query()->columns(['projectcode'])
-									 ->order('projectcode')
-									 ->limit(10)
-									 ->execute();
-									
-			$this->view->pCode = $pCode;
-			
-			$this->view->form = new ProjectUploadForm(null,array('edit' => true));
+			return $this->dispatcher->forward(
+					[
+						"controller" => "project",
+						"action"     => "uploadsheet",
+					]
+				);
 		}
     }
     
@@ -835,7 +782,7 @@ class ProjectController extends ControllerBase
 	}
     
     
-	    /**
+	/**
      * Shows the form to create a new project
      */
     public function uploadFileAction()

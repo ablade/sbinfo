@@ -155,7 +155,8 @@ class SitebossController extends ControllerBase
                     ]
                 );
             }
-
+			
+			//echo $sb->SiteName;
             $this->view->form = new SitebossForm($sb, array('edit' => true));
         }
     }
