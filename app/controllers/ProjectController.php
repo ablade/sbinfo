@@ -12,6 +12,55 @@ use Phalcon\Filter;
  */
 class ProjectController extends ControllerBase
 {
+	
+	private $_sbColums = array(
+				'id',
+				'project_id',
+				'SiteName',
+				'ProjectCode',
+				'VendorCode',
+				'VendorPonum',
+				'VendorInvoicenum',
+				'SiteID',
+				'EquipmentRelease',
+				'Switch',
+				'CellNumber',
+				'Latitude',
+				'Longitude',
+				'Address',
+				'City',
+				'State',
+				'ZIP',
+				'County',
+				'CellTech',
+				'PhoneNumber',
+				'Email',
+				'SiteBossIP',
+				'Subnet',
+				'Gateway',
+				'RouterPort',
+				'AccessDirections',
+				'SiteNotes',
+				'PowerPlant',
+				'PowerPlantMonitored',
+				'PowerPlantIP',
+				'PowerPlantComment',
+				'HVAC',
+				'HVACMonitored',
+				'HVACIP',
+				'HVACComment',
+				'ATSType',
+				'ATSComment',
+				'GeneratorRunSchedule',
+				'GenType',
+				'GenModel',
+				'FuelType',
+				'FuelGaugeType',
+				'FuseorBreaker',
+				'CompletionDate',
+				'CompletionName'
+	);
+	
     public function initialize()
     {
         $this->tag->setTitle('Mange Your Projects');
@@ -153,6 +202,9 @@ class ProjectController extends ControllerBase
      */
     public function createAction()
     {
+		//$this->view->disable();
+		require_once dirname(__FILE__) . '/../Classes/PHPExcel/IOFactory.php';
+		/*
         if (!$this->request->isPost()) {
             return $this->dispatcher->forward(
                 [
@@ -204,6 +256,203 @@ class ProjectController extends ControllerBase
                 "action"     => "index",
             ]
         );
+       
+       */
+
+
+
+
+
+
+		//echo "inside create action <br>";
+		if ($this->request->isPost()) {
+			//echo "This is a post <br>";
+			// Check if the user has uploaded files
+			if ($this->request->hasFiles() == true) {
+			//  $baseLocation = '/wamp/www/AIR/public/images/';
+				//echo "We have files <br>";
+
+				// Print the real file names and sizes
+				foreach ($this->request->getUploadedFiles() as $file) 
+				{
+					echo "Saving a file  " . $file->getName();
+					
+				 //$inputFile = $_FILES['spreadsheet']['name'];
+                 //$inputFile = $_FILES['spreadsheet']['tmp_name'];
+				 //$inputFileType = PHPExcel_IOFactory::identify($inputFile);
+				 //$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+                 //$objPHPExcel21 = $objReader->load($inputFile);
+					$inputFile = $file->getTempName();
+					$inputFileType = PHPExcel_IOFactory::identify($inputFile);
+					$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+					$objPHPExcel21 = $objReader->load($inputFile);
+					$siteInfo = $objPHPExcel21->getSheetByName("sites");
+
+					if($siteInfo)
+					{
+						$siteboss = new Siteboss();
+						//Get the keys/colums for the database
+						$sbArray = array_keys($siteboss->toArray());//array_keys($siteboss);
+						$sheetArray = array(); //Use this as a holder for valid keys
+						//Get the header if its a valid field map it value = valid or invalid
+						$header = $siteInfo->getRowIterator(1)->current();
+						$cellIterator = $header->getCellIterator();
+						$cellIterator->setIterateOnlyExistingCells(true); //Goes to column max if false goes to not null if true;
+						//foreach ($siteInfo->getRowIterator() as $row) {							
+						foreach ($cellIterator as $key=>$cell) {
+							if (!is_null($cell)) {
+								$value = $cell->getCalculatedValue();
+								if(in_array($value, $sbArray))//$this->_sbColums))
+								{
+									$sheetArray[$key] = $value;
+								}else
+								{
+									$sheetArray[$key] = 'invalid';
+								}								
+							}
+						}
+						
+						$rowIterator = $siteInfo->getRowIterator(2);
+						$countrow = 0;
+						foreach($rowIterator as $row)
+						{ //for each row save it to the database
+							$countrow++;
+							echo '<br>Inside rowIterator</br>';
+							$rowcellIter = $row->getCellIterator();
+							$rowcellIter->setIterateOnlyExistingCells(true);
+							$modArray = new ArrayObject();//array();
+							foreach($rowcellIter as $in=>$va)
+							{//We add this to the database
+								if($sheetArray[$in] !== 'invalid')
+								{
+									$modArray[$sheetArray[$in]] = $va;
+								}
+							}
+							
+							$siteboss = new Siteboss();
+							
+							$siteboss->setWithArray($modArray->getArrayCopy());
+							try
+							{
+								//$copy = $modArray->getArrayCopy();
+								if($siteboss->save() == true)
+								{
+									echo '<br>A siteboss was saved</br>';
+								}
+							} catch (Exception $e){
+									echo $e->getMessage() . '<br>';
+									echo '<pre>' . $e->getTraceAsString() . '</pre>';
+							}
+							
+							
+						}
+						
+/*
+						$modArray = array();
+						echo '<table border="1">';
+						echo '<tr>';
+						
+						foreach($row2cellIter as $in=>$va)
+						{
+							echo '<td>';
+							if($sheetArray[$in] !== 'invalid')
+							{
+								$modArray[$sheetArray[$in]] = $va;
+								echo $modArray[$sheetArray[$in]];
+							}
+							
+							echo '</td>';
+						}
+							echo '<td>';
+							echo $count . '&nbsp;';
+							echo '</td>';
+						/*
+						foreach($row2cellIter as $ind=>$val)
+						{
+							echo '<td>';
+							echo $ind . ' : ' . $val . '&nbsp;';
+							echo '</td>';
+						} 
+						*/
+						
+						/*
+						echo '</tr>';
+						echo '</table>';
+						
+						//$modArray['id'] = '3';
+						echo '<table border="1">';
+						echo '<tr>';
+						foreach($modArray as $ind=>$val)
+						{
+							echo '<td>';
+							echo $ind . ' : ' . $val . '&nbsp;';
+							echo '</td>';
+							
+						}
+						echo '</tr>';
+						echo '</table>';
+						
+						echo '<br>Before Static</br>';
+						$siteboss1 = Siteboss::withRow($modArray);
+						echo '<br>After Static</br>';
+						
+						try
+						{
+							if($siteboss1->save() == true)
+							{
+								echo '<br>A siteboss was saved</br>';
+							}
+						} catch (Exception $e){
+								echo $e->getMessage() . '<br>';
+								echo '<pre>' . $e->getTraceAsString() . '</pre>';
+						}
+						
+						*/
+					
+					
+					
+						echo '<br>$countrow : ' . $countrow . '</br>';
+					}else
+					{
+						echo '<br>sites sheet not found</br>';
+					}
+					 
+
+				}
+
+					//Move the file into the application
+					//$file->moveTo($baseLocation . $file->getName());
+				//}
+				echo "<br>Finished with no errors<br>";
+				return;
+			}
+			else 
+			{
+				
+				if ((! empty ($_FILES) && $_SERVER['CONTENT_LENGTH'] > 0) ||
+					(empty ($_POST) && empty ($_FILES) && $_SERVER['CONTENT_LENGTH'] > 0)) {
+					// Clear errors
+					/*
+					while (ob_get_level() > 0) {
+						if(ob_get_contents())
+						{
+							ob_end_clean();
+						}
+					}
+					*/
+					$this->flash->error('Uploaded file exceeds the maximum upload size allowed {0}');
+				}
+				else {
+					$this->flash->error('No files uploaded');
+				}
+			}
+	   }	
+
+
+
+
+
+
 
     }
 
@@ -353,10 +602,315 @@ class ProjectController extends ControllerBase
         return $response;
 	}
 	
-	    /**
+	/**
      * Shows the form to create a new project
      */
     public function uploadAction()
+    {
+		if ($this->request->isPost()) 
+		{
+		require_once dirname(__FILE__) . '/../Classes/PHPExcel/IOFactory.php';
+		//Check if its a post
+		//If its a post check that required fieds are good
+		    //$projectCode = $this->request->getPost('projectcode', array('string', 'striptags','upper'));
+            //$description = $this->request->getPost('name', array('string', 'striptags'));
+			//$companyId = $this->request->getPost('company_id');
+			
+			//if(empty($projectCode) || empty($description) || empty($companyId))
+			//{
+			//	echo 'There are missing fields that are required';
+			//	echo 'Project Code : ' .$projectCode . '  Description : ' . $description . '  Company Id : ' .  $companyId;
+			$form = new ProjectUploadForm;
+			$project = new Project();
+			$project->active = 'Y';
+			$data = $this->request->getPost();
+			if (!$form->isValid($data, $project)) {
+				foreach ($form->getMessages() as $message) {
+					$this->flash->error($message);
+				}
+				return $this->dispatcher->forward(
+					[
+						"controller" => "project",
+						"action"     => "uploadsheet",
+					]
+				);
+			}else
+			{ ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				
+				// There should only by one file so lets validate
+				foreach ($this->request->getUploadedFiles() as $file) 
+				{
+					$inputFile = $file->getTempName();	
+					if(!$inputFile)
+					{//Check if there was a file sent
+						$message = 'An XLSL file is needed to create this project';
+						$this->flash->error($message);
+						return $this->dispatcher->forward(
+						[
+							"controller" => "project",
+							"action"     => "uploadsheet",
+						]);
+					}	
+							
+					$inputFileType = PHPExcel_IOFactory::identify($inputFile);
+					$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+					$objPHPExcel21 = $objReader->load($inputFile);
+					$siteInfo = $objPHPExcel21->getSheetByName("sites"); //Final check if the spreadsheet has a sheet with "sites" as a title
+					
+					if($siteInfo)
+					{
+						
+						//Lets create a project
+						/*
+						    $form = new ProjectUploadForm;
+							$project = new Project();
+							$project->active = 'Y';
+
+							$data = $this->request->getPost();
+							if (!$form->isValid($data, $project)) {
+								foreach ($form->getMessages() as $message) {
+									$this->flash->error($message);
+								}
+
+								return $this->dispatcher->forward(
+									[
+										"controller" => "project",
+										"action"     => "index",
+									]
+								);
+							}
+						*/
+							try{
+								if ($project->save() == false) {
+									foreach ($project->getMessages() as $message) {
+										$this->flash->error($message);
+									}
+
+									return $this->dispatcher->forward(
+										[
+											"controller" => "project",
+											"action"     => "uploadsheet",
+										]
+									);
+								}else
+								{ //We have a project now lets display the project_id
+									echo 'The project id is : ' . $project->id;
+									$siteboss = new Siteboss();
+									//Get the keys/colums for the database
+									$sbArray = array_keys($siteboss->toArray());//array_keys($siteboss);
+									$sheetArray = array(); //Use this as a holder for valid keys
+									//Get the header if its a valid field map it value = valid or invalid
+									$header = $siteInfo->getRowIterator(1)->current();
+									$cellIterator = $header->getCellIterator();
+									$cellIterator->setIterateOnlyExistingCells(true); //Goes to column max if false goes to not null if true;
+									//foreach ($siteInfo->getRowIterator() as $row) {							
+									foreach ($cellIterator as $key=>$cell) {
+										if (!is_null($cell)) {
+											$value = $cell->getCalculatedValue();
+											if(in_array($value, $sbArray))//$this->_sbColums))
+											{
+												$sheetArray[$key] = $value;
+											}else
+											{
+												$sheetArray[$key] = 'invalid';
+											}								
+										}
+									}
+									
+									$rowIterator = $siteInfo->getRowIterator(2);
+									$countrow = 0;
+									foreach($rowIterator as $row)
+									{ //for each row save it to the database
+										$countrow++;
+										echo '<br>Inside rowIterator</br>';
+										$rowcellIter = $row->getCellIterator();
+										$rowcellIter->setIterateOnlyExistingCells(true);
+										$modArray = new ArrayObject();//array();
+										foreach($rowcellIter as $in=>$va)
+										{//We add this to the database
+											if($sheetArray[$in] !== 'invalid')
+											{
+												$modArray[$sheetArray[$in]] = $va;
+											}
+										}
+										
+										$modArray['project_id'] = $project->id;
+										$modArray['ProjectCode'] = $project->projectcode;
+										$siteboss = new Siteboss();
+										
+										$siteboss->setWithArray($modArray->getArrayCopy());
+										try
+										{
+											//$copy = $modArray->getArrayCopy();
+											if($siteboss->save() == true)
+											{
+												echo '<br>A siteboss was saved</br>';
+											}
+										} catch (Exception $e){
+												echo $e->getMessage() . '<br>';
+												//echo '<pre>' . $e->getTraceAsString() . '</pre>';
+										}										
+									}									
+								}		
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+							
+						} catch (Exception $e){
+									echo '<br>' .$e->getMessage() . '<br>';
+									//echo '<pre>' . $e->getTraceAsString() . '</pre>';
+						}
+										 
+					 
+				}else
+				{
+					$message = 'The XLSL file is not a valid.  File needs to have a sheet name "sites" (case-sensitive)';
+					$this->flash->error($message);
+					return $this->dispatcher->forward(
+							[
+								"controller" => "project",
+								"action"     => "uploadsheet",
+							]
+						);
+					
+				}
+			
+			}///.For Loop
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+			} ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			
+		//Check that the file attached is the right format etc.
+		//Create the project - Show id
+		}else
+		{
+			$pCode = Project::query()->columns(['projectcode'])
+									 ->order('projectcode')
+									 ->limit(10)
+									 ->execute();
+									
+			$this->view->pCode = $pCode;
+			
+			$this->view->form = new ProjectUploadForm(null,array('edit' => true));
+		}
+    }
+    
+    public function uploadSheetAction()
+    {
+			$pCode = Project::query()->columns(['projectcode'])
+							 ->order('projectcode')
+							 ->limit(10)
+							 ->execute();
+									
+			$this->view->pCode = $pCode;
+			
+			$this->view->form = new ProjectUploadForm(null,array('edit' => true));
+			$this->view->pick("project/upload");
+		
+	}
+    
+    
+	    /**
+     * Shows the form to create a new project
+     */
+    public function uploadFileAction()
+    {
+		if ($this->request->isPost()) {
+			if ($this->request->hasFiles() == true) {
+				foreach ($this->request->getUploadedFiles() as $file) 
+				{//There should only be 1 file 
+
+					//echo "Saving a file  " . $file->getName();
+					$inputFile = $file->getTempName();
+					$inputFileType = PHPExcel_IOFactory::identify($inputFile);
+					$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+					$objPHPExcel21 = $objReader->load($inputFile);
+
+					//Final check if file is a valid project file
+					$siteInfo = $objPHPExcel21->getSheetByName("sites");
+					
+					if($siteInfo)
+					{
+						$row = $siteInfo->getRowIterator(1)->current();
+						//Map the Valid Colums to the database
+						//Check if value is in the allowed header
+						//Map column to database column
+						
+						
+						
+						echo '<table border="1">';
+						//foreach ($siteInfo->getRowIterator() as $row) {
+							$cellIterator = $row->getCellIterator();
+							$cellIterator->setIterateOnlyExistingCells(false);
+							echo '<tr>';
+							foreach ($cellIterator as $cell) {
+								if (!is_null($cell)) {
+									$value = $cell->getCalculatedValue();
+									echo '<td>';
+									echo $value . '&nbsp;';
+									echo '</td>';
+								}
+							}
+							echo '</tr>';
+						//}
+						echo '</table>';
+						echo '<br> Highest column : ' . $siteInfo->getHighestColumn() . '</br>';
+					
+					}else
+					{
+						echo '<br>Not a vaild Project Excel Sheet must have "sites" sheet which is case sensitive</br>';
+					}
+					  
+				
+				}
+				echo "<br>Finished with no errors<br>";
+				return;
+			}
+			else 
+			{
+				
+				if ((! empty ($_FILES) && $_SERVER['CONTENT_LENGTH'] > 0) ||
+					(empty ($_POST) && empty ($_FILES) && $_SERVER['CONTENT_LENGTH'] > 0)) {
+					$this->flash->error('Uploaded file exceeds the maximum upload size allowed {0}');
+				}
+				else {
+					$this->flash->error('No files uploaded');
+				}
+			}
+	   }	
+
+
+    } 
+    
+    	    /**
+     * Shows the form to create a new project
+     */
+    public function uploadPhotoAction()
     {
 		
 		$pCode = Project::query()->columns(['projectcode'])
@@ -368,4 +922,69 @@ class ProjectController extends ControllerBase
 		
         $this->view->form = new ProjectUploadForm(null, array('edit' => true));
     }
+    
+    public function downloadAction()
+    {
+		$this->view->disable();
+		//echo 'download';
+		
+		$objPHPExcel = new PHPExcel();
+
+		// Set document properties
+		$objPHPExcel->getProperties()->setCreator("Asentria AIRT")
+									 ->setLastModifiedBy("Asentria AIRT")
+									 ->setTitle("Office 2007 XLSX Test Document")
+									 ->setSubject("Office 2007 XLSX Test Document")
+									 ->setDescription("Siteboss for an AIRT project")
+									 ->setKeywords("office 2007 openxml php")
+									 ->setCategory("AIRT Project");
+
+		$objPHPExcel->createSheet();
+		$objPHPExcel->createSheet();
+		// Add some data
+		$objPHPExcel->setActiveSheetIndex(0)
+					->setCellValue('A1', 'UniqueID')
+					->setCellValue('B1', 'SiteName')
+					->setCellValue('C1', 'SiteID')
+					->setCellValue('D1', 'ProjectCode')
+					->setCellValue('E1', 'VendorPronum');
+
+		// Miscellaneous glyphs, UTF-8
+		/*
+		$objPHPExcel->setActiveSheetIndex(0)
+					->setCellValue('A4', 'Miscellaneous glyphs')
+					->setCellValue('A5', 'éàèùâêîôûëïüÿäöüç');
+        */
+		// Rename worksheet
+		$objPHPExcel->getActiveSheet()->setTitle('sites');
+		
+		$objPHPExcel->setActiveSheetIndex(1)
+					->setCellValue('A1', 'Before wiring - ATS connections')
+					->setCellValue('A2', 'Before wiring - Alarm block connections')
+					->setCellValue('A3', 'Before wiring - Generator controller connections')
+					->setCellValue('A4', 'Before Wiring - Fuel gauge connections')
+					->setCellValue('A5', 'Front of SiteBoss')
+					->setCellValue('A6', 'Back of SiteBoss after wired');
+		$objPHPExcel->getActiveSheet()->setTitle('photos');
+		
+		// Set active sheet index to the first sheet, so Excel opens this as the first sheet
+		$objPHPExcel->setActiveSheetIndex(0);
+
+
+		// Redirect output to a client’s web browser (Excel2007)
+		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+		header('Content-Disposition: attachment;filename="01simple.xlsx"');
+		header('Cache-Control: max-age=0');
+		// If you're serving to IE 9, then the following may be needed
+		header('Cache-Control: max-age=1');
+
+		// If you're serving to IE over SSL, then the following may be needed
+		header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+		header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
+		header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+		header ('Pragma: public'); // HTTP/1.0
+
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+		$objWriter->save('php://output');
+	}
 }

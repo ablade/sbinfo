@@ -28,6 +28,9 @@
         {{ link_to("project/upload", "Upload New Project") }}
     </li>
     <li class="next">
+        {{ link_to("project/download", "Download Project") }}
+    </li>
+    <li class="next">
         {{ link_to("project/new", "Create New Project") }}
     </li>
 </ul>

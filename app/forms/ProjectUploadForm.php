@@ -26,12 +26,9 @@ class ProjectUploadForm extends Form
 
 		$projectId = new Text("projectcode",['oninput' => 'project.getProjectCode(this);']);
         $projectId->setLabel("New Project Code");
-        $projectId->setFilters(array('int'));
+        $projectId->setFilters(array('striptags','string','upper'));
         $projectId->addValidators(array(
             new PresenceOf(array(
-                'message' => 'Project Code is required'
-            )),
-            new Numericality(array(
                 'message' => 'Project Code is required'
             ))
         ));
@@ -42,7 +39,7 @@ class ProjectUploadForm extends Form
         $name->setFilters(array('striptags', 'string'));
         $name->addValidators(array(
             new PresenceOf(array(
-                'message' => 'Name is required'
+                'message' => 'A description is required'
             ))
         ));
         $this->add($name);
@@ -54,6 +51,11 @@ class ProjectUploadForm extends Form
             'emptyValue' => ''
         ));
         $companies->setLabel('Vendor Name');
+        $name->addValidators(array(
+            new PresenceOf(array(
+                'message' => 'Vendor Name is required'
+            ))
+        ));
         $this->add($companies);
 
 

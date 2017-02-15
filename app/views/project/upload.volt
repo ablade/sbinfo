@@ -1,7 +1,7 @@
 {{ content() }}
 
 
-{{ form("project/upload") }}
+{{ form("project/upload", 'enctype' : 'multipart/form-data') }}
     <fieldset>
     {% for element in form %}
         {% if is_a(element, 'Phalcon\Forms\Element\Hidden') %}
@@ -15,6 +15,14 @@
             </div>
         {% endif %}
     {% endfor %}
+		<div class="form-group row">
+			<label class='col-md-2 col-form-label' align ='left' for='spreadsheet'>
+			Upload Spreadsheet
+			</label>
+			<div class="col-md-10">
+			<input id='spreadsheet' name='spreadsheet' class='form-control' type='file'>
+			</div>
+		</div>
     </fieldset>
 
     <ul class="pager">
@@ -25,7 +33,7 @@
             {{ submit_button("Upload", "class": "btn btn-success") }}
         </li>
     </ul>
-
+    
 </form>
 
 {% for pc in pCode %}

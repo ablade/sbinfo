@@ -84,7 +84,7 @@ class UserController extends ControllerBase
             $email = $this->request->getPost('email', 'email');
             $password = $this->request->getPost('password');
             $repeatPassword = $this->request->getPost('repeatPassword');
-			$role = $this->request->getPost('reg_role');
+			$role = $this->request->getPost('role');
 			$companyId = $this->request->getPost('company_id');
             if ($password != $repeatPassword) {
                 $this->flash->error('Passwords are different');
@@ -175,7 +175,7 @@ class UserController extends ControllerBase
             $email = $this->request->getPost('email', 'email');
             $password = $this->request->getPost('password');
             $repeatPassword = $this->request->getPost('repeatPassword');
-			$role = $this->request->getPost('reg_role');
+			$role = $this->request->getPost('role');
 			$companyId = $this->request->getPost('company_id');
 			
 			if($password != $repeatPassword)

@@ -10,7 +10,8 @@ $loader->registerDirs([
     APP_PATH . $config->application->pluginsDir,
     APP_PATH . $config->application->libraryDir,
     APP_PATH . $config->application->modelsDir,
-    APP_PATH . $config->application->formsDir
+    APP_PATH . $config->application->formsDir,
+    APP_PATH . $config->application->phpexcelDir
 ])->register();
 
 $loader->registerClasses([

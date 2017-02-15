@@ -4,14 +4,6 @@
 {{ form("company/create") }}
     <fieldset>
 
-
-
-
-
-
-  
-
-
     {% for element in form %}
         {% if is_a(element, 'Phalcon\Forms\Element\Hidden') %}
             {{ element }}

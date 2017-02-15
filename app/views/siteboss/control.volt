@@ -14,7 +14,7 @@
 <div id="sbdetails" style="display: none;">
 <div align="left">
 
-{#
+
 <textarea disabled rows="20" style="width:100%;">
 
 {% for key,value in sbName %}
@@ -23,8 +23,8 @@
 ZIP: {{sbName.ZIP}} &#13;
 
 
-#}
 
+{#
 ZIP:  {{sbName.ZIP}}<br>
 County:<br>
 Cell Tech:<br>
@@ -37,10 +37,10 @@ Router Port:<br>
 Access:<br>
 Notes:<br>
 Power Plant:<br>
-
+#}
         
-{# </textarea> #}
-		
+{# #}
+</textarea> 		
 </div>
 <button id="dtlBkBtn" class="btn btn-default" onclick="$('.sbcontrols').show();$('#sbdetails').hide();">Back</button>
 </div>
