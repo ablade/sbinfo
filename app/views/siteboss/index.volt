@@ -35,7 +35,7 @@
 </ul>
 
 
-{% for siteboss in page.items %}
+{% for siteboss in sb %}
     {% if loop.first %}
 <table id="selectionTable" class="table table-bordered table-striped" align="center">
     <thead>
@@ -58,28 +58,7 @@
         {% endif %}
         </tr>
     {% if loop.last %}
-    </tbody>
-    
-    
-    
-	{# ///////////////This is commented out
-    <tbody>
-        <tr>
-            <td colspan="7" align="right">
-                <div class="btn-group">
-                    {{ link_to("siteboss/search", '<i class="icon-fast-backward"></i> First', "class": "btn") }}
-                    {{ link_to("siteboss/search?page=" ~ page.before, '<i class="icon-step-backward"></i> Previous', "class": "btn") }}
-                    {{ link_to("siteboss/search?page=" ~ page.next, '<i class="icon-step-forward"></i> Next', "class": "btn") }}
-                    {{ link_to("siteboss/search?page=" ~ page.last, '<i class="icon-fast-forward"></i> Last', "class": "btn") }}
-                    <span class="help-inline">{{ page.current }} of {{ page.total_pages }}</span>
-                </div>
-            </td>
-        </tr>
-    </tbody
-	//////////////////////#}
-	
-	
-	
+    </tbody>	
 </table>
     {% endif %}
 {% else %}

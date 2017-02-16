@@ -119,7 +119,9 @@ class SitebossController extends ControllerBase
 			$this->flash->notice("No SiteBoss found for this project");
 			return;
 		}
-
+		
+		
+		$this->view->setVar("sb", $mySB);
 		$this->view->setVar("project123", $project[0]);
     }
 
