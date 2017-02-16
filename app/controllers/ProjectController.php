@@ -535,9 +535,9 @@ class ProjectController extends ControllerBase
     
     public function pcodeAjaxAction($qstring)
     {                              
-		$pCode = Project::query()->columns(['projectcode'])
-								 ->andwhere('projectcode LIKE :qstr:')
-								 ->bind(['qstr' => $qstring . '%'])
+		$pCode = Project::query()->columns(['id','name','projectcode'])
+								 ->andwhere('projectcode LIKE :qstr: OR name LIKE :qstr:')
+								 ->bind(['qstr' => '%' . $qstring . '%'])
 		                         ->order('projectcode')
 		                         ->limit(10)
 		                         ->execute();

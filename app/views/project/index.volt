@@ -6,7 +6,10 @@
 	<div class="row">
            <div id="custom-search-input">
 				<div class="input-group col-md-12">
-					<input id="proj-search-str" name="proj-search-str" type="text" class="  search-query form-control" placeholder="Search" />
+					<input id="proj-search-str" name="proj-search-str" 
+					type="text" class="search-query form-control" 
+					placeholder="Search"  
+					oninput='project.searchProjInfo(this);' />
 					<span class="input-group-btn">
 						<button class="btn btn-primary" type="submit">
 							<span class=" glyphicon glyphicon-search"></span>

@@ -108,7 +108,7 @@ class SitebossController extends ControllerBase
 				
 				$sanSearch = implode(" ", $filterArray);
 				$params['nid'] = '%' . $sanSearch . '%';
-				$sbQuery->andwhere('SiteName LIKE :nid: OR ProjectCode LIKE :nid:');
+				$sbQuery->andwhere('SiteName LIKE :nid: OR SiteID LIKE :nid:');
 				$sbQuery->bind($params);
 					
 			}
@@ -311,36 +311,19 @@ class SitebossController extends ControllerBase
         $sb = Siteboss::findFirstById($id);
         if (!$sb) {
             $this->flash->error("Siteboss was not found");
-
-            return $this->dispatcher->forward(
-                [
-                    "controller" => "siteboss",
-                    "action"     => "index",
-                ]
-            );
+			return $this->response->redirect("siteboss");
         }
 
         if (!$sb->delete()) {
             foreach ($sb->getMessages() as $message) {
                 $this->flash->error($message);
             }
-
-            return $this->dispatcher->forward(
-                [
-                    "controller" => "siteboss",
-                    "action"     => "index",
-                ]
-            );
+            return $this->response->redirect("siteboss");
         }
-
-        $this->flash->success("Siteboss was deleted");
-
-            return $this->dispatcher->forward(
-                [
-                    "controller" => "siteboss",
-                    "action"     => "index",
-                ]
-            );
+		
+		$message = 'Deleted Site : ' . $sb->SiteID . ' - ' . $sb->SiteName;
+        $this->flash->success($message);
+        return $this->response->redirect("siteboss");
     }
     
     public function controlAction($id, $btn)
@@ -394,7 +377,7 @@ class SitebossController extends ControllerBase
 		                         ->execute();
 		                         */
 		//TODO Get cid get proejct id perhaps pass it in
-		$sbQuery = Siteboss::query();
+		$sbQuery = Siteboss::query()->columns(['id','SiteName','SiteID']);
 		$filter = new Filter();
 		$words = explode(" ", $qstring);
 		$filterArray = array();
@@ -409,7 +392,7 @@ class SitebossController extends ControllerBase
 		
 		$sanSearch = implode(" ", $filterArray);
 		$params['nid'] = '%' . $sanSearch . '%';
-		$sbQuery->andwhere('SiteName LIKE :nid: OR ProjectCode LIKE :nid:');
+		$sbQuery->andwhere('SiteName LIKE :nid: OR SiteID LIKE :nid:');
 		$sbQuery->bind($params);
 		$mySB = $sbQuery->execute();
 		                              
