@@ -6,7 +6,7 @@ use Phalcon\Paginator\Adapter\Model as Paginator;
 use Phalcon\Filter;
 
 /**
- * ProjectController
+ * SitebossController
  *
  * Manage CRUD operations for products
  */
@@ -47,12 +47,9 @@ class SitebossController extends ControllerBase
 			}	
 		}elseif($pid and is_numeric($pid)) //must always have an argument
 		{  
-				//$params['pid'] = $pid;
-				//$params['cid'] = $auth['cid'];
 				$this->view->setVar("role",'U');
 				$myQuery = Project::query()->where('id = :pid:');
 				$myQuery->andwhere('company_id = :cid:');					
-				//$project = $myQuery->bind($params)->execute();
 				$project = $myQuery->bind(['pid' => $pid, 'cid' => $auth['cid']])->execute();
 				
 				
@@ -122,21 +119,12 @@ class SitebossController extends ControllerBase
 			$this->flash->notice("No SiteBoss found for this project");
 			return;
 		}
-		
-		$numberPage = 1;
-		$paginator = new Paginator(array(
-			"data"  => $mySB,
-			"limit" => 10,
-			"page"  => $numberPage
-		));
-		$this->view->page = $paginator->getPaginate(); 	
-		//echo $project[0]->name;
+
 		$this->view->setVar("project123", $project[0]);
-		
     }
 
     /**
-     * Shows the form to create a new product
+     * Shows the form to create a new Siteboss
      */
     public function newAction()
     {
@@ -145,7 +133,7 @@ class SitebossController extends ControllerBase
     }
 
     /**
-     * Edits a product based on its id
+     * Edits a siteboss based on its id
      */
     public function editAction($id)
     {
@@ -164,13 +152,12 @@ class SitebossController extends ControllerBase
                 );
             }
 			
-			//echo $sb->SiteName;
             $this->view->form = new SitebossForm($sb, array('edit' => true));
         }
     }
 
     /**
-     * Creates a new product
+     * Creates a new siteboss
      */
     public function createAction()
     {
@@ -301,7 +288,7 @@ class SitebossController extends ControllerBase
     }
 
     /**
-     * Deletes a product
+     * Deletes a siteboss
      *
      * @param string $id
      */
@@ -326,6 +313,9 @@ class SitebossController extends ControllerBase
         return $this->response->redirect("siteboss");
     }
     
+    /**
+     * Shows the control buttons after a user selects a siteboss.
+     */  
     public function controlAction($id, $btn)
     {
         $mySb = Siteboss::query()->where('id = :pid:')
@@ -358,6 +348,7 @@ class SitebossController extends ControllerBase
 				
     }
     
+    
     public function takephotoAction($sid)
     {
 		
@@ -368,15 +359,8 @@ class SitebossController extends ControllerBase
 	
 	public function projSiteAjaxAction($pid,$qstring)
     {    
-		/*                          
-		$pCode = Project::query()->columns(['projectcode'])
-								 ->andwhere('projectcode LIKE :qstr:')
-								 ->bind(['qstr' => $qstring . '%'])
-		                         ->order('projectcode')
-		                         ->limit(10)
-		                         ->execute();
-		                         */
-		//TODO Get cid get proejct id perhaps pass it in
+
+		$this->view->disable();
 		$sbQuery = Siteboss::query()->columns(['id','SiteName','SiteID']);
 		$filter = new Filter();
 		$words = explode(" ", $qstring);
@@ -396,8 +380,6 @@ class SitebossController extends ControllerBase
 		$sbQuery->bind($params);
 		$mySB = $sbQuery->execute();
 		                              
-		//$this->view->disable();
-
         //Create a response instance
         $response = new \Phalcon\Http\Response();
 

@@ -154,9 +154,7 @@ class ProjectController extends ControllerBase
      */
     public function createAction()
     {
-		//$this->view->disable();
-		require_once dirname(__FILE__) . '/../Classes/PHPExcel/IOFactory.php';
-		/*
+
         if (!$this->request->isPost()) {
             return $this->dispatcher->forward(
                 [
@@ -209,204 +207,9 @@ class ProjectController extends ControllerBase
             ]
         );
        
-       */
+	}	
 
-
-
-
-
-
-		//echo "inside create action <br>";
-		if ($this->request->isPost()) {
-			//echo "This is a post <br>";
-			// Check if the user has uploaded files
-			if ($this->request->hasFiles() == true) {
-			//  $baseLocation = '/wamp/www/AIR/public/images/';
-				//echo "We have files <br>";
-
-				// Print the real file names and sizes
-				foreach ($this->request->getUploadedFiles() as $file) 
-				{
-					echo "Saving a file  " . $file->getName();
-					
-				 //$inputFile = $_FILES['spreadsheet']['name'];
-                 //$inputFile = $_FILES['spreadsheet']['tmp_name'];
-				 //$inputFileType = PHPExcel_IOFactory::identify($inputFile);
-				 //$objReader = PHPExcel_IOFactory::createReader($inputFileType);
-                 //$objPHPExcel21 = $objReader->load($inputFile);
-					$inputFile = $file->getTempName();
-					$inputFileType = PHPExcel_IOFactory::identify($inputFile);
-					$objReader = PHPExcel_IOFactory::createReader($inputFileType);
-					$objPHPExcel21 = $objReader->load($inputFile);
-					$siteInfo = $objPHPExcel21->getSheetByName("sites");
-
-					if($siteInfo)
-					{
-						$siteboss = new Siteboss();
-						//Get the keys/colums for the database
-						$sbArray = array_keys($siteboss->toArray());//array_keys($siteboss);
-						$sheetArray = array(); //Use this as a holder for valid keys
-						//Get the header if its a valid field map it value = valid or invalid
-						$header = $siteInfo->getRowIterator(1)->current();
-						$cellIterator = $header->getCellIterator();
-						$cellIterator->setIterateOnlyExistingCells(true); //Goes to column max if false goes to not null if true;
-						//foreach ($siteInfo->getRowIterator() as $row) {							
-						foreach ($cellIterator as $key=>$cell) {
-							if (!is_null($cell)) {
-								$value = $cell->getCalculatedValue();
-								if(in_array($value, $sbArray))//$this->_sbColums))
-								{
-									$sheetArray[$key] = $value;
-								}else
-								{
-									$sheetArray[$key] = 'invalid';
-								}								
-							}
-						}
-						
-						$rowIterator = $siteInfo->getRowIterator(2);
-						$countrow = 0;
-						foreach($rowIterator as $row)
-						{ //for each row save it to the database
-							$countrow++;
-							echo '<br>Inside rowIterator</br>';
-							$rowcellIter = $row->getCellIterator();
-							$rowcellIter->setIterateOnlyExistingCells(true);
-							$modArray = new ArrayObject();//array();
-							foreach($rowcellIter as $in=>$va)
-							{//We add this to the database
-								if($sheetArray[$in] !== 'invalid')
-								{
-									$modArray[$sheetArray[$in]] = $va;
-								}
-							}
-							
-							$siteboss = new Siteboss();
-							
-							$siteboss->setWithArray($modArray->getArrayCopy());
-							try
-							{
-								//$copy = $modArray->getArrayCopy();
-								if($siteboss->save() == true)
-								{
-									echo '<br>A siteboss was saved</br>';
-								}
-							} catch (Exception $e){
-									echo $e->getMessage() . '<br>';
-									echo '<pre>' . $e->getTraceAsString() . '</pre>';
-							}
-							
-							
-						}
-						
-/*
-						$modArray = array();
-						echo '<table border="1">';
-						echo '<tr>';
-						
-						foreach($row2cellIter as $in=>$va)
-						{
-							echo '<td>';
-							if($sheetArray[$in] !== 'invalid')
-							{
-								$modArray[$sheetArray[$in]] = $va;
-								echo $modArray[$sheetArray[$in]];
-							}
-							
-							echo '</td>';
-						}
-							echo '<td>';
-							echo $count . '&nbsp;';
-							echo '</td>';
-						/*
-						foreach($row2cellIter as $ind=>$val)
-						{
-							echo '<td>';
-							echo $ind . ' : ' . $val . '&nbsp;';
-							echo '</td>';
-						} 
-						*/
-						
-						/*
-						echo '</tr>';
-						echo '</table>';
-						
-						//$modArray['id'] = '3';
-						echo '<table border="1">';
-						echo '<tr>';
-						foreach($modArray as $ind=>$val)
-						{
-							echo '<td>';
-							echo $ind . ' : ' . $val . '&nbsp;';
-							echo '</td>';
-							
-						}
-						echo '</tr>';
-						echo '</table>';
-						
-						echo '<br>Before Static</br>';
-						$siteboss1 = Siteboss::withRow($modArray);
-						echo '<br>After Static</br>';
-						
-						try
-						{
-							if($siteboss1->save() == true)
-							{
-								echo '<br>A siteboss was saved</br>';
-							}
-						} catch (Exception $e){
-								echo $e->getMessage() . '<br>';
-								echo '<pre>' . $e->getTraceAsString() . '</pre>';
-						}
-						
-						*/
-					
-					
-					
-						echo '<br>$countrow : ' . $countrow . '</br>';
-					}else
-					{
-						echo '<br>sites sheet not found</br>';
-					}
-					 
-
-				}
-
-					//Move the file into the application
-					//$file->moveTo($baseLocation . $file->getName());
-				//}
-				echo "<br>Finished with no errors<br>";
-				return;
-			}
-			else 
-			{
-				
-				if ((! empty ($_FILES) && $_SERVER['CONTENT_LENGTH'] > 0) ||
-					(empty ($_POST) && empty ($_FILES) && $_SERVER['CONTENT_LENGTH'] > 0)) {
-					// Clear errors
-					/*
-					while (ob_get_level() > 0) {
-						if(ob_get_contents())
-						{
-							ob_end_clean();
-						}
-					}
-					*/
-					$this->flash->error('Uploaded file exceeds the maximum upload size allowed {0}');
-				}
-				else {
-					$this->flash->error('No files uploaded');
-				}
-			}
-	   }	
-
-
-
-
-
-
-
-    }
+    
 
     /**
      * Saves current project in screen
@@ -534,7 +337,8 @@ class ProjectController extends ControllerBase
     
     
     public function pcodeAjaxAction($qstring)
-    {                              
+    {     
+		$this->view->disable();                         
 		$pCode = Project::query()->columns(['id','name','projectcode'])
 								 ->andwhere('projectcode LIKE :qstr: OR name LIKE :qstr:')
 								 ->bind(['qstr' => '%' . $qstring . '%'])
@@ -542,8 +346,6 @@ class ProjectController extends ControllerBase
 		                         ->limit(10)
 		                         ->execute();
 		                              
-		//$this->view->disable();
-
         //Create a response instance
         $response = new \Phalcon\Http\Response();
 
@@ -670,7 +472,7 @@ class ProjectController extends ControllerBase
 										}
 										
 									} catch (Exception $e){
-											echo $e->getMessage() . '<br>';
+											echo '<br>' . $e->getMessage() . '<br>';
 											//echo '<pre>' . $e->getTraceAsString() . '</pre>';
 									}
 																			
@@ -678,7 +480,7 @@ class ProjectController extends ControllerBase
 								//Success
 								$total = $siteInfo->getHighestRow() - 1;
 								$message = 'Successful save ' . $rowSaved 
-								. ' out of ' . $total . 'row/s in the file to Project: ' 
+								. ' out of ' . $total . ' row/s in the file to Project: ' 
 								. $project->name;
 								$this->flash->success($message);
 								return $this->dispatcher->forward(
@@ -729,8 +531,7 @@ class ProjectController extends ControllerBase
 			$this->view->pCode = $pCode;
 			
 			$this->view->form = new ProjectUploadForm(null,array('edit' => true));
-			$this->view->pick("project/upload");
-		
+			$this->view->pick("project/upload");	
 	}
     
     
@@ -805,23 +606,7 @@ class ProjectController extends ControllerBase
 
 
     } 
-    
-    	    /**
-     * Shows the form to create a new project
-     */
-    public function uploadPhotoAction()
-    {
-		
-		$pCode = Project::query()->columns(['projectcode'])
-		                         ->order('projectcode')
-		                         ->limit(10)
-		                         ->execute();
-		                        
-		$this->view->pCode = $pCode;
-		
-        $this->view->form = new ProjectUploadForm(null, array('edit' => true));
-    }
-    
+  
     public function downloadAction()
     {
 		$this->view->disable();

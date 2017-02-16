@@ -59,7 +59,10 @@
         </tr>
     {% if loop.last %}
     </tbody>
-	{#
+    
+    
+    
+	{# ///////////////This is commented out
     <tbody>
         <tr>
             <td colspan="7" align="right">
@@ -73,7 +76,10 @@
             </td>
         </tr>
     </tbody
-	#}
+	//////////////////////#}
+	
+	
+	
 </table>
     {% endif %}
 {% else %}

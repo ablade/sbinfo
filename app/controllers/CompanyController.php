@@ -18,7 +18,6 @@ class CompanyController extends ControllerBase
     {
         $this->session->conditions = null;
         $this->view->form = new CompanyForm;
-        //return $this->response->redirect("company/search");
     }
 
     /**
@@ -116,7 +115,6 @@ class CompanyController extends ControllerBase
         $company = new Company();
 
         $data = $this->request->getPost();
-        //$data['vendor_code'] = strtoupper($data['vendor_code']);
         if (!$form->isValid($data, $company)) {
             foreach ($form->getMessages() as $message) {
                 $this->flash->error($message);
@@ -144,9 +142,7 @@ class CompanyController extends ControllerBase
         }
 
         $form->clear();
-
         $this->flash->success("Company was created successfully");
-
         return $this->dispatcher->forward(
             [
                 "controller" => "company",
@@ -185,9 +181,7 @@ class CompanyController extends ControllerBase
         }
 
         $form = new CompanyForm;
-
         $data = $this->request->getPost();
-        //$data['vendor_code'] = strtoupper($data['vendor_code']);
         if (!$form->isValid($data, $company)) {
             foreach ($form->getMessages() as $message) {
                 $this->flash->error($message);
@@ -215,9 +209,7 @@ class CompanyController extends ControllerBase
         }
 
         $form->clear();
-
         $this->flash->success("Company was updated successfully");
-
         return $this->dispatcher->forward(
             [
                 "controller" => "company",
@@ -276,22 +268,17 @@ class CompanyController extends ControllerBase
     
     public function vcodeAjaxAction($qstring)
     {
-		
+		$this->view->disable();
 		$vendorlist = Company::query()->columns(['vendor_code','name'])
 									  ->andwhere('vendor_code LIKE :qstr:')
 									  ->bind(['qstr' => $qstring . '%'])
 		                              ->order('vendor_code')
 		                              ->limit(10)
 		                              ->execute();
-		                              
-		//$this->view->disable();
-
         //Create a response instance
         $response = new \Phalcon\Http\Response();
-
         //Set the content of the response
         $response->setContent(json_encode($vendorlist));
-
         //Return the response
         return $response;
 	}

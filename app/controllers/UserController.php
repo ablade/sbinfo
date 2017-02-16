@@ -122,7 +122,7 @@ class UserController extends ControllerBase
         $this->view->form = $form;
     }
     
-     /**
+    /**
      * Edits a user based on its id
      */
     public function editAction($id)
@@ -148,7 +148,7 @@ class UserController extends ControllerBase
         }
     }
     
-        /**
+    /**
      * Saves current project in screen
      *
      * @param string $id
