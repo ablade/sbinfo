@@ -129,7 +129,6 @@ var project =
 {
 	getProjectCode : function(that)
 	{
-		debugger;
 		var xhttp = new XMLHttpRequest();
 		var q = that.value;
 		xhttp.open('GET','/project/pcodeAjax/'+q,true);
@@ -144,11 +143,40 @@ var project =
 	
 	updateProjectCode : function(response)
 	{
-		debugger;
 		var output = '';
 		for(i=0; i < response.length; i++)
 		{
 			output += '<tr><td>' + (response[i].projectcode).toUpperCase() + '</td></tr>'; 
+		}
+		var tbody = document.querySelector('body > div > div > table > tbody');
+		tbody.innerHTML = output;	
+	},
+	
+	searchProjInfo : function(that)
+	{
+		var xhttp = new XMLHttpRequest();
+		var q = that.value;
+		xhttp.open('GET','/project/pcodeAjax/'+q,true);
+		xhttp.responseType = "json";
+		xhttp.onload = function(oEvent)
+		{
+			project.updateProjInfo(xhttp.response);
+		}
+		
+		xhttp.send();		
+	},
+	
+	updateProjInfo : function(response)
+	{
+		var output = '';
+		for(i=0; i < response.length; i++)
+		{
+
+			 output += '<tr><td style="cursor: pointer;" onclick="utilsProject.getSelected(this);" pid="'+response[i].id+'">'+  
+			            (response[i].name) + '</td><td width="7%"><a href="/project/edit/'+(response[i].id)+
+			            '" class="btn btn-default"><i class="glyphicon glyphicon-edit"></i> Edit</a></td>' +
+			            '<td width="7%"><a href="/project/delete/'+ (response[i].id) +'" class="btn btn-default">'+
+			            '<i class="glyphicon glyphicon-remove"></i> Delete</a></td></tr>';	
 		}
 		var tbody = document.querySelector('body > div > div > table > tbody');
 		tbody.innerHTML = output;	
@@ -159,6 +187,44 @@ var project =
 	
 }
 
+var siteboss =
+{
+	searchSiteInfo : function(that)
+	{
+		var xhttp = new XMLHttpRequest();
+		var q = that.value;
+		var role = that.getAttribute("role");
+		xhttp.open('GET','/siteboss/projSiteAjax/0/'+q,true);
+		xhttp.responseType = "json";
+		xhttp.onload = function(oEvent)
+		{
+			siteboss.updateSiteNN(xhttp.response, role);
+		}
+		
+		xhttp.send();	
+	},
+	
+	updateSiteNN : function(response,role)
+	{
+		var output = '';
+		for(i=0; i < response.length; i++)
+		{
+			output += '<tr><td style="cursor: pointer;" onclick="utilsProject.getSelected(this);" pid="'+response[i].id+'">'+  
+			response[i].SiteID + ' - ' + response[i].SiteName + '</td>';
+			if(role == 'admin') //if Admin
+			{
+				output += '<td width="7%"><a href="/siteboss/edit/'+(response[i].id)+
+						'" class="btn btn-default"><i class="glyphicon glyphicon-edit"></i> Edit</a></td>' +
+						'<td width="7%"><a href="/siteboss/delete/'+ (response[i].id) +'" class="btn btn-default">'+
+						'<i class="glyphicon glyphicon-remove"></i> Delete</a></td>';
+			}
+			output+='</tr>';	
+		}
+		var tbody = document.querySelector('body > div > div > table > tbody');
+		tbody.innerHTML = output;	
+	}
+	
+}
 
 $(document).ready(function () {
     $("#registerForm .alert").hide();
