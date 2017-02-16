@@ -36,6 +36,14 @@ class SitebossController extends ControllerBase
 			{
 				$myQuery = Project::query()->where('id = :pid:');
 				$project = $myQuery->bind(['pid' => $pid])->execute();
+				$sbQuery->andwhere('project_id = :pid:');
+				if (!$this->request->isPost()) 
+				{
+					$sbQuery->bind(['pid' => $pid]);	
+				}else
+				{
+					$params['pid'] = $pid;
+				}
 			}	
 		}elseif($pid and is_numeric($pid)) //must always have an argument
 		{  

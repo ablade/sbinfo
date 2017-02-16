@@ -26,7 +26,7 @@ class SitebossForm extends Form
 
 
         //$name = new Select('project_id', Project::find(), 
-        $name = new Select('projectcode', Project::find(array('columns'=> array('id', " CONCAT(projectcode, ' - ', name) as pidn"),)),
+        $name = new Select('project_id', Project::find(array('columns'=> array('id', " CONCAT(projectcode, ' - ', name) as pidn"),)),
         array(
             'using'      => array('id', 'pidn'),
             'useEmpty'   => true,
