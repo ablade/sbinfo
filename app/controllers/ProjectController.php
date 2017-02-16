@@ -12,55 +12,7 @@ use Phalcon\Filter;
  */
 class ProjectController extends ControllerBase
 {
-	
-	private $_sbColums = array(
-				'id',
-				'project_id',
-				'SiteName',
-				'ProjectCode',
-				'VendorCode',
-				'VendorPonum',
-				'VendorInvoicenum',
-				'SiteID',
-				'EquipmentRelease',
-				'Switch',
-				'CellNumber',
-				'Latitude',
-				'Longitude',
-				'Address',
-				'City',
-				'State',
-				'ZIP',
-				'County',
-				'CellTech',
-				'PhoneNumber',
-				'Email',
-				'SiteBossIP',
-				'Subnet',
-				'Gateway',
-				'RouterPort',
-				'AccessDirections',
-				'SiteNotes',
-				'PowerPlant',
-				'PowerPlantMonitored',
-				'PowerPlantIP',
-				'PowerPlantComment',
-				'HVAC',
-				'HVACMonitored',
-				'HVACIP',
-				'HVACComment',
-				'ATSType',
-				'ATSComment',
-				'GeneratorRunSchedule',
-				'GenType',
-				'GenModel',
-				'FuelType',
-				'FuelGaugeType',
-				'FuseorBreaker',
-				'CompletionDate',
-				'CompletionName'
-	);
-	
+
     public function initialize()
     {
         $this->tag->setTitle('Mange Your Projects');

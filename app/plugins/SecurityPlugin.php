@@ -64,7 +64,7 @@ class SecurityPlugin extends Plugin
 			$privateResources = array(
 				
 				'project'     => array('index', 'search'),
-				'siteboss'    => array('index', 'takephoto', 'edit', 'save', 'control')	
+				'siteboss'    => array('index', 'takephoto', 'edit', 'save', 'control','projsiteajax')	
 			);
 			foreach ($privateResources as $resource => $actions) {
 				$acl->addResource(new Resource($resource), $actions);

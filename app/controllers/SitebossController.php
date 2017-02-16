@@ -382,4 +382,47 @@ class SitebossController extends ControllerBase
 		//Get sb with id and get project_id
 		//If role U project exist with p_id and c_id good
 	}
+	
+	public function projSiteAjaxAction($pid,$qstring)
+    {    
+		/*                          
+		$pCode = Project::query()->columns(['projectcode'])
+								 ->andwhere('projectcode LIKE :qstr:')
+								 ->bind(['qstr' => $qstring . '%'])
+		                         ->order('projectcode')
+		                         ->limit(10)
+		                         ->execute();
+		                         */
+		//TODO Get cid get proejct id perhaps pass it in
+		$sbQuery = Siteboss::query();
+		$filter = new Filter();
+		$words = explode(" ", $qstring);
+		$filterArray = array();
+		foreach( $words as $word)
+		{
+			$sanitized = $filter->sanitize($word,"alphanum");
+			if($sanitized)
+			{
+				array_push($filterArray, $sanitized);
+			}
+		}
+		
+		$sanSearch = implode(" ", $filterArray);
+		$params['nid'] = '%' . $sanSearch . '%';
+		$sbQuery->andwhere('SiteName LIKE :nid: OR ProjectCode LIKE :nid:');
+		$sbQuery->bind($params);
+		$mySB = $sbQuery->execute();
+		                              
+		//$this->view->disable();
+
+        //Create a response instance
+        $response = new \Phalcon\Http\Response();
+
+        //Set the content of the response
+        $response->setContent(json_encode($mySB));
+
+        //Return the response
+        return $response;
+	}
+	
 }
