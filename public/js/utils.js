@@ -209,13 +209,13 @@ var siteboss =
 		var output = '';
 		for(i=0; i < response.length; i++)
 		{
-			output += '<tr><td style="cursor: pointer;" onclick="utilsProject.getSelected(this);" pid="'+response[i].id+'">'+  
+			output += '<tr><td style="cursor: pointer;" onclick="utilsProject.getSelected(this);" pid="'+response[i].UniqueID+'">'+  
 			response[i].SiteID + ' - ' + response[i].SiteName + '</td>';
 			if(role == 'admin') //if Admin
 			{
-				output += '<td width="7%"><a href="/siteboss/edit/'+(response[i].id)+
+				output += '<td width="7%"><a href="/siteboss/edit/'+(response[i].UniqueID)+
 						'" class="btn btn-default"><i class="glyphicon glyphicon-edit"></i> Edit</a></td>' +
-						'<td width="7%"><a href="/siteboss/delete/'+ (response[i].id) +'" class="btn btn-default">'+
+						'<td width="7%"><a href="/siteboss/delete/'+ (response[i].UniqueID) +'" class="btn btn-default">'+
 						'<i class="glyphicon glyphicon-remove"></i> Delete</a></td>';
 			}
 			output+='</tr>';	

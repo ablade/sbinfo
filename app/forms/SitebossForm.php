@@ -18,10 +18,10 @@ class SitebossForm extends Form
     {
 
         if (!isset($options['edit'])) {
-            $element = new Text("id");
+            $element = new Text("UniqueID");
             $this->add($element->setLabel("Id"));
         } else {
-            $this->add(new Hidden("id"));
+            $this->add(new Hidden("UniqueID"));
         }
 
 

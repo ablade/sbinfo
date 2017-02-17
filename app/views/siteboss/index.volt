@@ -50,11 +50,11 @@
     <tbody>
     {% endif %}
         <tr>
-			<td style="cursor: pointer;" onclick="utilsProject.getSelected(this);" pid="{{siteboss.id}}">
+			<td style="cursor: pointer;" onclick="utilsProject.getSelected(this);" pid="{{siteboss.UniqueID}}">
 				{{ siteboss.SiteID }} - {{ siteboss.SiteName }}</td>
 			        {% if role == 'A' %}
-            <td width="7%">{{ link_to("siteboss/edit/" ~ siteboss.id, '<i class="glyphicon glyphicon-edit"></i> Edit', "class": "btn btn-default") }}</td>
-            <td width="7%">{{ link_to("siteboss/delete/" ~ siteboss.id, '<i class="glyphicon glyphicon-remove"></i> Delete', "class": "btn btn-default") }}</td>
+            <td width="7%">{{ link_to("siteboss/edit/" ~ siteboss.UniqueID, '<i class="glyphicon glyphicon-edit"></i> Edit', "class": "btn btn-default") }}</td>
+            <td width="7%">{{ link_to("siteboss/delete/" ~ siteboss.UniqueID, '<i class="glyphicon glyphicon-remove"></i> Delete', "class": "btn btn-default") }}</td>
         {% endif %}
         </tr>
     {% if loop.last %}

@@ -30,7 +30,7 @@ class SitebossController extends ControllerBase
 		$project;
 		if($auth['role'] === 'A')
 		{
-			$sbQuery->limit(100);
+			$sbQuery->limit(10);
 			$this->view->setVar("role",'A');	
 			if($pid and is_numeric($pid))
 			{
@@ -142,7 +142,7 @@ class SitebossController extends ControllerBase
 
         if (!$this->request->isPost()) {
 
-            $sb = Siteboss::findFirstById($id);
+            $sb = Siteboss::findFirstByUniqueID($id);
             if (!$sb) {
                 $this->flash->error("Siteboss was not found");
 
@@ -230,9 +230,9 @@ class SitebossController extends ControllerBase
             );
         }
 
-        $id = $this->request->getPost("id", "int");
+        $id = $this->request->getPost("UniqueID", "int");
 
-        $sb = Siteboss::findFirstById($id);
+        $sb = Siteboss::findFirstByUniqueID($id);
         if (!$sb) {
             $this->flash->error("Siteboss does not exist");
 
@@ -297,7 +297,7 @@ class SitebossController extends ControllerBase
     public function deleteAction($id)
     {
 
-        $sb = Siteboss::findFirstById($id);
+        $sb = Siteboss::findFirstByUniqueID($id);
         if (!$sb) {
             $this->flash->error("Siteboss was not found");
 			return $this->response->redirect("siteboss");
@@ -320,7 +320,7 @@ class SitebossController extends ControllerBase
      */  
     public function controlAction($id, $btn)
     {
-        $mySb = Siteboss::query()->where('id = :pid:')
+        $mySb = Siteboss::query()->where('UniqueID = :pid:')
 								 ->bind(['pid' => $id])
 								 ->execute();
         $this->view->setVar('sbName', $mySb[0]);
@@ -363,7 +363,7 @@ class SitebossController extends ControllerBase
     {    
 
 		$this->view->disable();
-		$sbQuery = Siteboss::query()->columns(['id','SiteName','SiteID']);
+		$sbQuery = Siteboss::query()->limit(10)->columns(['UniqueID','SiteName','SiteID']);
 		$filter = new Filter();
 		$words = explode(" ", $qstring);
 		$filterArray = array();

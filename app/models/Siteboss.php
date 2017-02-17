@@ -5,7 +5,7 @@ use Phalcon\Mvc\Model;
 class Siteboss extends Model
 {
 
-	public $id;
+	public $UniqueID;
 	public $project_id;
 	public $SiteName;
 	public $ProjectCode;
