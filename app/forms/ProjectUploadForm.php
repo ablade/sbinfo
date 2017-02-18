@@ -24,7 +24,7 @@ class ProjectUploadForm extends Form
             $this->add(new Hidden("id"));
         }
 
-		$projectId = new Text("projectcode",['oninput' => 'project.getProjectCode(this);']);
+		$projectId = new Text("projectcode",['oninput' => 'project.getProjectJSON(this,project.updateProjectCode);']);
         $projectId->setLabel("New Project Code");
         $projectId->setFilters(array('striptags','string','upper'));
         $projectId->addValidators(array(

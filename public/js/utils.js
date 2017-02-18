@@ -127,7 +127,7 @@ var company =
 
 var project =
 {
-	getProjectCode : function(that)
+	getProjectJSON : function(that, callback)
 	{
 		var xhttp = new XMLHttpRequest();
 		var q = that.value;
@@ -135,9 +135,8 @@ var project =
 		xhttp.responseType = "json";
 		xhttp.onload = function(oEvent)
 		{
-			project.updateProjectCode(xhttp.response);
+			callback(xhttp.response);
 		}
-		
 		xhttp.send();	
 	},
 	
@@ -151,21 +150,7 @@ var project =
 		var tbody = document.querySelector('body > div > div > table > tbody');
 		tbody.innerHTML = output;	
 	},
-	
-	searchProjInfo : function(that)
-	{
-		var xhttp = new XMLHttpRequest();
-		var q = that.value;
-		xhttp.open('GET','/project/pcodeAjax/'+q,true);
-		xhttp.responseType = "json";
-		xhttp.onload = function(oEvent)
-		{
-			project.updateProjInfo(xhttp.response);
-		}
-		
-		xhttp.send();		
-	},
-	
+
 	updateProjInfo : function(response)
 	{
 		var output = '';
@@ -180,16 +165,27 @@ var project =
 		}
 		var tbody = document.querySelector('body > div > div > table > tbody');
 		tbody.innerHTML = output;	
+	},
+	
+	updateProjDownload : function(response)
+	{
+		var output = '';
+		for(i=0; i < response.length; i++)
+		{
+			 output += '<tr><td>'+ (response[i].projectcode) + '</td><td>'+ (response[i].name) + 
+			           '</td><td width="7%"><a href="/project/downloadProject/'+(response[i].id)+
+			           '" class="btn btn-default"><i class="glyphicon glyphicon-download-alt"></i>Download</a></td></tr>';	
+		}
+		var tbody = document.querySelector('body > div > div > table > tbody');
+		tbody.innerHTML = output;	
 	}
-	
-	
 	
 	
 }
 
 var siteboss =
 {
-	searchSiteInfo : function(that)
+	getSitesJSON : function(that,callback)
 	{
 		var xhttp = new XMLHttpRequest();
 		var q = that.value;
@@ -198,7 +194,7 @@ var siteboss =
 		xhttp.responseType = "json";
 		xhttp.onload = function(oEvent)
 		{
-			siteboss.updateSiteNN(xhttp.response, role);
+			callback(xhttp.response, role);
 		}
 		
 		xhttp.send();	

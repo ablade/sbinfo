@@ -1,5 +1,11 @@
 {{ content() }}
-<h3 align="center"> {{ project123.name }}</h3>
+<h3 align="center"> {{ project123.name }}
+{% if role == 'A' %}
+	{% if project123.id %}
+		<a href="/project/downloadProject/{{project123.id}}" class="btn btn-primary" title='Download this Project'><i class="glyphicon glyphicon-download-alt"></i></a>
+	{% endif %}
+{% endif %}
+</h3>
 <form action="/siteboss/index/{{ project123.id }}" method="post">
 <div class="container">
 	<div class="row">
@@ -7,7 +13,7 @@
 				<div class="input-group col-md-12">
 					<input id="site-search-str" name="site-search-str"
 					type="text" class="  search-query form-control"
-					placeholder="Search" oninput='siteboss.searchSiteInfo(this);'
+					placeholder="Search" oninput='siteboss.getSitesJSON(this,siteboss.updateSiteNN);'
 {% if role == 'A' %}
 		role='admin'
 {% endif %}

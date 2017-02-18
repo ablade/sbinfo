@@ -365,10 +365,10 @@ class ProjectController extends ControllerBase
 		{
 			require_once dirname(__FILE__) . '/../Classes/PHPExcel/IOFactory.php';
 			$form = new ProjectUploadForm;
-			$project = new Project();
-			$project->active = 'Y';
+			$proj = new Project();
+			$proj->active = 'Y';
 			$data = $this->request->getPost();
-			if (!$form->isValid($data, $project)) {
+			if (!$form->isValid($data, $proj)) {
 				foreach ($form->getMessages() as $message) {
 					$this->flash->error($message);
 				}
@@ -380,135 +380,32 @@ class ProjectController extends ControllerBase
 				);
 			}else
 			{
-				// There should only by one file so lets validate
-				foreach ($this->request->getUploadedFiles() as $file) 
-				{
-					$inputFile = $file->getTempName();	
-					if(!$inputFile)
-					{//Check if there was a file sent
-						$message = 'An XLSL file is needed to create this project';
-						$this->flash->error($message);
+				try{
+					if ($proj->save() == false) {
+						foreach ($proj->getMessages() as $message) {
+							$this->flash->error($message);
+						}
 						return $this->dispatcher->forward(
-						[
-							"controller" => "project",
-							"action"     => "uploadsheet",
-						]);
-					}	
-							
-					$inputFileType = PHPExcel_IOFactory::identify($inputFile);
-					$objReader = PHPExcel_IOFactory::createReader($inputFileType);
-					$objPHPExcel21 = $objReader->load($inputFile);
-					$siteInfo = $objPHPExcel21->getSheetByName("sites"); 
-					//Final check if the spreadsheet has a sheet with "sites" as a title
-					//lets create a project and add the sitebosses
-					if($siteInfo)
-					{
-						try{
-							if ($project->save() == false) {
-								foreach ($project->getMessages() as $message) {
-									$this->flash->error($message);
-								}
-								return $this->dispatcher->forward(
-									[
-										"controller" => "project",
-										"action"     => "uploadsheet",
-									]
-								);
-							}else
-							{ //We have a project now lets attached the new siteboss to this
-								$siteboss = new Siteboss();
-								//Get the keys/colums for the database
-								$sbArray = array_keys($siteboss->toArray());
-								$validKeyArray = array(); //Use this as a holder for valid keys
-								//Get the header if its a valid field map it value = valid or invalid
-								$header = $siteInfo->getRowIterator(1)->current();
-								$cellIterator = $header->getCellIterator();
-								$cellIterator->setIterateOnlyExistingCells(true); //Goes to column max if false gets null values if true;
-								$rowSaved = 0;
-								foreach ($cellIterator as $key=>$cell) {
-									if (!is_null($cell)) {
-										$value = $cell->getCalculatedValue();
-										if(in_array($value, $sbArray))
-										{
-											$validKeyArray[$key] = $value;
-										}else
-										{
-											$validKeyArray[$key] = 'invalid';
-										}								
-									}
-								}
-								
-								//The second row should contain data that pretains to the siteboss table in the db
-								$rowIterator = $siteInfo->getRowIterator(2);
-								
-								foreach($rowIterator as $row)
-								{ //for each row save it to the database
-									$rowcellIter = $row->getCellIterator();
-									$rowcellIter->setIterateOnlyExistingCells(true);
-									$modArray = new ArrayObject();//array();
-									foreach($rowcellIter as $in=>$va)
-									{//We add this to the database
-										if($validKeyArray[$in] !== 'invalid')
-										{
-											$modArray[$validKeyArray[$in]] = $va;
-										}
-									}
-									
-									//Set the project id and project code to the project we just created.
-									//In the future we might have to check the value of id and project code.
-									$modArray['project_id'] = $project->id;
-									$modArray['ProjectCode'] = $project->projectcode;
-									
-									//PDO might be faster but for now just loop to the columns and save the siteboss info
-									$siteboss = new Siteboss();
-									$siteboss->setWithArray($modArray->getArrayCopy());
-									try
-									{
-										//$copy = $modArray->getArrayCopy();
-										if($siteboss->save() == true)
-										{
-											$rowSaved++;
-											//echo '<br>A siteboss was saved</br>';
-										}
-										
-									} catch (Exception $e){
-											echo '<br>' . $e->getMessage() . '<br>';
-											//echo '<pre>' . $e->getTraceAsString() . '</pre>';
-									}
-																			
-								}
-								//Success
-								$total = $siteInfo->getHighestRow() - 1;
-								$message = 'Successful save ' . $rowSaved 
-								. ' out of ' . $total . ' row/s in the file to Project: ' 
-								. $project->name;
-								$this->flash->success($message);
-								return $this->dispatcher->forward(
-									[
-										"controller" => "project",
-										"action"     => "index",
-									]
-								);
-																
-							}		
-	
-					   } catch (Exception $e){ //Project wasn't saved
-								echo '<br>' .$e->getMessage() . '<br>';
-								//echo '<pre>' . $e->getTraceAsString() . '</pre>';
-					   } 
+							[
+								"controller" => "project",
+								"action"     => "uploadsheet",
+							]
+						);
 					}else
 					{
-						$message = 'The XLSL file is not a valid.  File needs to have a sheet name "sites" (case-sensitive)';
-						$this->flash->error($message);
-						return $this->dispatcher->forward(
-								[
-									"controller" => "project",
-									"action"     => "uploadsheet",
-								]
-							);	
+						foreach ($this->request->getUploadedFiles() as $myfile) 
+						{
+							$this->_processXLSX($myfile,$proj);
+					
+						}//For Loop		
 					}
-			
-				}//For Loop			
+					
+				} catch (Exception $e){ //Project wasn't saved
+					echo '<br>' .$e->getMessage() . '<br>';
+					//echo '<pre>' . $e->getTraceAsString() . '</pre>';
+				} 
+				// There should only by one file so lets validate
+		
 			} //else valid
 		}else
 		{
@@ -609,12 +506,53 @@ class ProjectController extends ControllerBase
   
     public function downloadAction()
     {
+    	
+		$projects = Project::query()->columns(['id','name','projectcode'])
+		                            ->limit(20)->execute();
+		
+		$this->view->myprojects = $projects; 
+	}
+	
+    public function downloadProjectAction($pid)
+    {
 		$this->view->disable();
-		//echo 'download';
+		//1. Check that the pid is valid if not valid redirect to downloadAction
+		//2. If pid is valid check that there are sitebosses for this project
+		//   if not send flash message and redirect to downloadAction
+		//3. If there are sitebosses yay create an xlsx file.
+		
+		if($pid and is_numeric($pid)) 
+		{
+			$project = Project::findFirstById($pid);
+			if (!$project) 
+			{
+				$this->flash->notice("The search did not find any projects!");
+				return $this->response->redirect('project/download');
+			}else
+			{
+				//Get all the sitebosses for this project
+				$Sites = Siteboss::query()->andwhere('project_id = :pid:')
+										  ->bind(['pid' => $pid])
+										  ->execute();
+
+				if (count($Sites) == 0) {
+					$this->flash->notice("The search did not find any sites for this project");
+						return;
+				}
+			}
+			
+		}else
+		{
+			$this->flash->notice("Please select a project");
+			return $this->response->redirect('project/download');
+		}
+
+
+		//We got here everything is good so start creating the file
 		
 		$objPHPExcel = new PHPExcel();
 
-		// Set document properties
+		// Set document properties creates first sheet
 		$objPHPExcel->getProperties()->setCreator("Asentria AIRT")
 									 ->setLastModifiedBy("Asentria AIRT")
 									 ->setTitle("Office 2007 XLSX Test Document")
@@ -623,24 +561,33 @@ class ProjectController extends ControllerBase
 									 ->setKeywords("office 2007 openxml php")
 									 ->setCategory("AIRT Project");
 
-		$objPHPExcel->createSheet();
-		$objPHPExcel->createSheet();
-		// Add some data
-		$objPHPExcel->setActiveSheetIndex(0)
-					->setCellValue('A1', 'UniqueID')
-					->setCellValue('B1', 'SiteName')
-					->setCellValue('C1', 'SiteID')
-					->setCellValue('D1', 'ProjectCode')
-					->setCellValue('E1', 'VendorPronum');
+		$objPHPExcel->createSheet(); //Creates second sheet
+		//Get the keys/columns for the database
+		$sbArray = array_keys($Sites[0]->toArray());
+        //We don't want to write the project_id to the xlsx file which is the second
+        //column in the database so we do this funky shit and unshift with the array 
+		$uid = array_shift($sbArray);
+		array_shift($sbArray);
+		array_unshift($sbArray, $uid);
 
-		// Miscellaneous glyphs, UTF-8
-		/*
-		$objPHPExcel->setActiveSheetIndex(0)
-					->setCellValue('A4', 'Miscellaneous glyphs')
-					->setCellValue('A5', 'éàèùâêîôûëïüÿäöüç');
-        */
-		// Rename worksheet
+
+		foreach($sbArray as $i=>$value)
+		{
+			$objPHPExcel->setActiveSheetIndex(0)->setCellValueByColumnAndRow($i,1,$value);
+		}
+		
+		//Populate each row starting with row 2
+		foreach($Sites as $sbi=>$sbv)
+		{
+			$row = $sbi + 2;
+			foreach( $sbArray as $i=>$value)
+			{
+				$objPHPExcel->setActiveSheetIndex(0)->setCellValueByColumnAndRow($i,$row,$sbv->$value);
+			}
+		}
+		
 		$objPHPExcel->getActiveSheet()->setTitle('sites');
+		
 		
 		$objPHPExcel->setActiveSheetIndex(1)
 					->setCellValue('A1', 'Before wiring - ATS connections')
@@ -657,7 +604,7 @@ class ProjectController extends ControllerBase
 
 		// Redirect output to a client’s web browser (Excel2007)
 		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-		header('Content-Disposition: attachment;filename="01simple.xlsx"');
+		header('Content-Disposition: attachment;filename="' . $project->name . '.xlsx"');
 		header('Cache-Control: max-age=0');
 		// If you're serving to IE 9, then the following may be needed
 		header('Cache-Control: max-age=1');
@@ -670,5 +617,118 @@ class ProjectController extends ControllerBase
 
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
 		$objWriter->save('php://output');
+
+	}
+	
+	private function _processXLSX($file, Project $project)
+    {
+		
+		$inputFile = $file->getTempName();	
+		if(!$inputFile)
+		{//Check if there was a file sent
+			$message = 'An XLSL file is needed to create this project';
+			$this->flash->error($message);
+			return $this->dispatcher->forward(
+			[
+				"controller" => "project",
+				"action"     => "uploadsheet",
+			]);
+		}	
+				
+		$inputFileType = PHPExcel_IOFactory::identify($inputFile);
+		$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+		$objPHPExcel21 = $objReader->load($inputFile);
+		$siteInfo = $objPHPExcel21->getSheetByName("sites"); 
+		//Final check if the spreadsheet has a sheet with "sites" as a title
+		//lets create a project and add the sitebosses
+		if($siteInfo)
+		{
+                    //We have a project now lets attached the new siteboss to this
+					$siteboss = new Siteboss();
+					//Get the keys/colums for the database
+					$sbArray = array_keys($siteboss->toArray());
+					$validKeyArray = array(); //Use this as a holder for valid keys
+					//Get the header if its a valid field map it value = valid or invalid
+					$header = $siteInfo->getRowIterator(1)->current();
+					$cellIterator = $header->getCellIterator();
+					$cellIterator->setIterateOnlyExistingCells(true); //Goes to column max if false gets null values if true;
+					$rowSaved = 0;
+					foreach ($cellIterator as $key=>$cell) {
+						if (!is_null($cell)) {
+							$value = $cell->getCalculatedValue();
+							if(in_array($value, $sbArray))
+							{
+								$validKeyArray[$key] = $value;
+							}else
+							{
+								$validKeyArray[$key] = 'invalid';
+							}								
+						}
+					}
+					
+					//The second row should contain data that pretains to the siteboss table in the db
+					$rowIterator = $siteInfo->getRowIterator(2);
+					
+					foreach($rowIterator as $row)
+					{ //for each row save it to the database
+						$rowcellIter = $row->getCellIterator();
+						$rowcellIter->setIterateOnlyExistingCells(true);
+						$modArray = new ArrayObject();//array();
+						foreach($rowcellIter as $in=>$va)
+						{//We add this to the database
+							if($validKeyArray[$in] !== 'invalid')
+							{
+								$modArray[$validKeyArray[$in]] = $va;
+							}
+						}
+						
+						//Set the project id and project code to the project we just created.
+						//In the future we might have to check the value of id and project code.
+						$modArray['project_id'] = $project->id;
+						$modArray['ProjectCode'] = $project->projectcode;
+						
+						//PDO might be faster but for now just loop to the columns and save the siteboss info
+						$siteboss = new Siteboss();
+						$siteboss->setWithArray($modArray->getArrayCopy());
+						try
+						{
+							//$copy = $modArray->getArrayCopy();
+							if($siteboss->save() == true)
+							{
+								$rowSaved++;
+								//echo '<br>A siteboss was saved</br>';
+							}
+							
+						} catch (Exception $e){
+								echo '<br>' . $e->getMessage() . '<br>';
+								//echo '<pre>' . $e->getTraceAsString() . '</pre>';
+						}
+																
+					}
+					//Success
+					$total = $siteInfo->getHighestRow() - 1;
+					$message = 'Successful save ' . $rowSaved 
+					. ' out of ' . $total . ' row/s in the file to Project: ' 
+					. $project->name;
+					$this->flash->success($message);
+					return $this->dispatcher->forward(
+						[
+							"controller" => "project",
+							"action"     => "index",
+						]
+					);
+													
+		}else
+		{
+			$message = 'The XLSL file is not a valid.  File needs to have a sheet name "sites" (case-sensitive)';
+			$this->flash->error($message);
+			return $this->dispatcher->forward(
+					[
+						"controller" => "project",
+						"action"     => "uploadsheet",
+					]
+				);	
+		}
+		
 	}
 }

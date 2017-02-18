@@ -52,7 +52,7 @@ class SecurityPlugin extends Plugin
 					'user'        => array('index','new', 'edit', 'save', 'create', 'delete'),
 					'register'    => array('index'),
 					'company'     => array('index', 'search', 'new', 'edit', 'save', 'create', 'delete', 'vcodeajax'),
-					'project'     => array('new', 'edit', 'save', 'create', 'delete', 'pcodeajax', 'upload','download', 'uploadsheet'),
+					'project'     => array('new', 'edit', 'save', 'create', 'delete', 'pcodeajax', 'upload','download', 'uploadsheet', 'downloadproject'),
 					'siteboss'    => array('new','create','delete')	
 					
 			);
