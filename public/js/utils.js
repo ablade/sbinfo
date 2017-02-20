@@ -85,11 +85,6 @@ var utilsProject =
 			$("#noSelectAlert").show();
 		}
 		
-	},
-	
-	gotoLocation(path)
-	{
-		window.location = path;
 	}
 }
 
