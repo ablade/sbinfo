@@ -324,6 +324,8 @@ class SitebossController extends ControllerBase
 								 ->bind(['pid' => $id])
 								 ->execute();
         $this->view->setVar('sbName', $mySb[0]);
+        $img = Image::find();
+        $this->view->setVar('myimg', $img);
         //$this->view->
         //$hey = $this->testerer();
         /*
@@ -350,13 +352,56 @@ class SitebossController extends ControllerBase
 				
     }
     
+    public function uploadPhotoAction($sid)
+    {               //uploadphoto
+		//Ensure its a post
+		//
+		$fourImg = Image::findFirst(1);
+		$strfy = base64_encode($fourImg->data);
+		echo '<img src="' . $fourImg->datatype . ',' .  $strfy . '" class="thumb-image">' ;
+		
+	}
+    
+    
     
     public function takephotoAction($sid)
     {
+
+		echo 'The post siteboss id ' . $sid . '<br>' ;
+		//$name = $this->request->getPost('hpic1');
+		$p = $this->request->getPost();
+		foreach ($p as $key=>$value) {
+			if(empty(trim($value)))
+			{
+				$ImgId = substr($key, 4);
+				echo 'The key : ' . $ImgId . '<br>';
+			}else
+			{
+				$ImgId = substr($key, 4);
+				$pieces = explode(',',$value);
+				$decode = base64_decode($pieces[1]);
+				
+				$theimg = Image::findFirstById($ImgId);
+				
+				$theimg->datatype = $pieces[0];
+				$theimg->data = $decode;
+				
+				if($theimg->save() == true)
+				{
+					echo '<br> Save the image <br>';
+				}
+				
+				echo '<img src="' . $value . '" class="thumb-image">' ;	
+			}
+		}
+		/*
+		$pieces = explode(',',$name);
+		$decode = base64_decode($pieces[1]);
 		
-		echo 'The siteboss id "' . $sid ;
-		//Get sb with id and get project_id
-		//If role U project exist with p_id and c_id good
+		echo '<br> The length of pieces ' . $pieces[0] . '<br>';
+		echo '<img src="' . $name . '" class="thumb-image">' ;
+		*/
+
 	}
 	
 	public function projSiteAjaxAction($pid,$qstring)
