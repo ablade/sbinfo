@@ -356,9 +356,11 @@ class SitebossController extends ControllerBase
     {               //uploadphoto
 		//Ensure its a post
 		//
+		
 		$fourImg = Image::findFirst(1);
 		$strfy = base64_encode($fourImg->data);
-		echo '<img src="' . $fourImg->datatype . ',' .  $strfy . '" class="thumb-image">' ;
+		echo '<img src="' . $fourImg->datatype . ',' .  $strfy . '" style="width:100%;height:100%;">' ;
+
 		
 	}
     
@@ -373,26 +375,41 @@ class SitebossController extends ControllerBase
 		foreach ($p as $key=>$value) {
 			if(empty(trim($value)))
 			{
-				$ImgId = substr($key, 4);
-				echo 'The key : ' . $ImgId . '<br>';
+				//$ImgId = substr($key, 4);			
+				//echo 'The key : ' . $ImgId . '<br>';
+				$rot = explode('_',$key);
+				foreach($rot as $k=>$v)
+				{
+					echo '<br>Key : ' . $k . ' value : ' . $v . ' <br>'; 
+				}
+
 			}else
 			{
-				$ImgId = substr($key, 4);
+								
+				//$ImgId = substr($key,4);
+				//explode('_',$key);
+				$rot = explode('_',$key);
 				$pieces = explode(',',$value);
 				$decode = base64_decode($pieces[1]);
 				
-				$theimg = Image::findFirstById($ImgId);
+				$theimg = Image::findFirstById($rot[2]);
 				
 				$theimg->datatype = $pieces[0];
 				$theimg->data = $decode;
 				
 				if($theimg->save() == true)
 				{
-					echo '<br> Save the image <br>';
+					echo '<br> Save the image : ' . $rot[2] . ' <br>';
 				}
 				
-				echo '<img src="' . $value . '" class="thumb-image">' ;	
+				$cl = ' class="rotate' . ($rot[1] * 90) . '"';
+				
+				
+				echo '<img src="' . $value . '" style="width:100%;height:100%;"' . $cl . '>' ;	
+				//echo '<br>' . $value . '<br>' ;
 			}
+			
+
 		}
 		/*
 		$pieces = explode(',',$name);

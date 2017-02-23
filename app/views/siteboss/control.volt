@@ -1,16 +1,4 @@
 {{ content() }}
-<style>
-#myProgress {
-  width: 100%;
-  background-color: #ddd;
-}
-
-#myBar {
-  width: 1%;
-  height: 30px;
-  background-color: #4CAF50;
-}
-</style>
 <h3 align ="center"> {{ sbName.SiteName }} </h3>
 <div id="sbdetails" style="display: none;">
 	<div align="left">
@@ -41,8 +29,9 @@
 <button id="dtlBkBtn" class="btn btn-default" onclick="$('.sbcontrols').show();$('#sbdetails').hide();">Back</button>
 </div>
 
-<div class="base64Images" style='display:none;' >
+<div class="base64Images" >
     {#
+		<div class="base64Images" style='display:none;' >
 	   This main form is hidden but it is the only form in this page
        which save the image to the database.  Note: hpic is important
        because this gets parse in the siteboss controller to get the id
@@ -50,8 +39,9 @@
      #}
 	{{ form("siteboss/takephoto/" ~ sbName.UniqueID) }}
 	{% for img in myimg %}
-	 <input id='hpic{{ img.id }}' name='hpic{{img.id}}'>
+	 <input id='hpic{{ img.id }}' name='r_0_{{img.id}}'>
 	{% endfor %}
+	<input type='submit' value='Go'/>
 	</form>
 </div>
 
@@ -73,10 +63,11 @@
 			  <button type="button" class="close" data-dismiss="modal">&times;</button>
 			  <h4 class="modal-title">{{img.description}}</h4>
 			</div>
-			<div class="modal-body">
+			<div class="modal-body overflow">
 			</div>
 			<div class="modal-footer">
 			  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			  <button type="button" class="btn btn-default" onclick="rotate(this)" update='hpic{{img.id}}'>Rotate</button>
 			</div>
 		  </div>
 		</div>
@@ -201,11 +192,11 @@ wi-fi.  Thanks
 					 image_holder.empty();
 					 var reader = new FileReader();
 					 reader.onloadend = function (e) {
-
 					var tempImg = new Image();
 					tempImg.src = reader.result;
 					tempImg.onload = function() {
-				 
+					
+				     {#
 						var MAX_WIDTH = 1024;
 						var MAX_HEIGHT = 576;
 						var tempW = tempImg.width;
@@ -228,10 +219,32 @@ wi-fi.  Thanks
 						var ctx = canvas.getContext("2d");
 						ctx.drawImage(this, 0, 0, tempW, tempH);
 						var dataURL = canvas.toDataURL("image/" + extn);
+					#}	
 						
+						
+						//First determine the size if the size is less than 1MB is okay
+						//Else make the file 1MB
+						var imgSize = this.src.length;
+						var MAX_SIZE = 1398104;//1048576;
+						var quality = 1.0;
+						var canvas = document.createElement('canvas');
+						canvas.width = this.width;
+						canvas.height = this.height;
+						var ctx = canvas.getContext("2d");
+						ctx.drawImage(this, 0, 0);
+						if( imgSize > MAX_SIZE)
+						{
+							quality = (MAX_SIZE / (this.width*this.height));	
+						}
+						
+
+						debugger;
+						var dataURL = canvas.toDataURL("image/jpeg", quality);
 						 $("<img />", {
 							 "src": dataURL,
-								 "class": "thumb-image"
+							 "class": "thumb-image",
+							 "style":"max-width:100%;max-height:100%;",
+							 "rotation":"0"
 						 }).appendTo(image_holder);
 					 
 					   //Get the hidden input and put this value in
@@ -344,6 +357,34 @@ debugger;
 			updateProgress(oEvent);
 		}
 		oReq.send(new FormData(formElement));
+	
+	}
+	
+	function rotate(that)
+	{
+
+		//Lets rotate the picture;
+		//Grab the parent container
+		var p = that.parentElement;
+		var b = p.previousElementSibling;
+		var im = b.children[0];
+		if(im)
+		{
+			//remove class
+			debugger;
+			var r = im.getAttribute('rotation');
+			im.classList.remove('rotate' + r);
+			var deg = (parseInt(r) + 90) % 360;
+			var r_str = deg.toString();
+			im.setAttribute('rotation', r_str);
+			//Add css class
+			im.classList.add('rotate'+ r_str);
+			//Get input and replace 0,1,2 or 3 which is the rotation * 90;
+			
+			var hInp = $('#' + that.getAttribute('update'))[0];
+			var updateName = hInp.getAttribute('name').replace(r/90,deg/90);
+			hInp.setAttribute('name', updateName);
+		}
 	
 	}
 
