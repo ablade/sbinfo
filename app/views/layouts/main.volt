@@ -47,5 +47,4 @@
 <div class="container">
     {{ flash.output() }}
     {{ content() }}
-    <hr>
 </div>
