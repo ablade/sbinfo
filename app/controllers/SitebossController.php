@@ -353,13 +353,73 @@ class SitebossController extends ControllerBase
     }
     
     public function uploadPhotoAction($sid)
-    {               //uploadphoto
-		//Ensure its a post
-		//
-		
+    {  
+		/*
 		$fourImg = Image::findFirst(1);
 		$strfy = base64_encode($fourImg->data);
-		echo '<img src="' . $fourImg->datatype . ',' .  $strfy . '" style="width:100%;height:100%;">' ;
+		$deg_hdr = explode('_',$fourImg->datatype);
+		$rotation = $deg_hdr[0] * 90;
+		$dheader =  $deg_hdr[1];
+		echo '<img src="' . $dheader . ',' .  $strfy . '" class="rotate' 
+		. $rotation  . '" style="width:100%;height:100%;">' ;
+		*/
+		
+		
+		//Validate the following
+		//1. Its a post
+		//2. $sid is good and exist
+		//3. for each photo check size using strlen($pieces[1]) ensure less than 1024 * 1024
+		//Loop:
+		//Get photoId and sid
+		//Save datatype prepend rotation {0,1,2,3} followed by _ then header
+		//where to redirect if something isn't right? siteboss control with siteboss
+		if ($this->request->isPost() and $sid and is_numeric($sid))
+		{ 
+			$radd = 'siteboss/control/' . $sid;
+			$p = $this->request->getPost();
+			foreach ($p as $key=>$value) 
+			{
+				if(empty(trim($value)))
+				{
+					$this->flash->error("All photos must have a valid image");
+					return $this->response->redirect($radd);
+				}else
+				{
+					//Query for the image with sid and img id if not found
+					//continue
+					$theimg = Image::findFirstById($rot[2]);
+					$rot = explode('_',$key);
+					$pieces = explode(',',$value);
+					if(strlen($pieces[1]) < 1048576 ) //and $theimg is not null 
+					{
+						$decode = base64_decode($pieces[1]);
+						$theimg->datatype = $rot[1] . '_' .$pieces[0];
+						$theimg->data = $decode;
+					
+						if($theimg->save() == true)
+						{
+							echo '<br> Save the image : ' . $rot[2] . ' <br>';
+						}else
+						{
+							//continue"
+						}
+					
+					}else
+					{
+							//Continue?
+					}
+				}
+				
+
+			}
+		}else
+		{
+			$this->flash->error("You attempted something that is not permitted");
+			return $this->response->redirect('project');
+		}
+		
+		
+		
 
 		
 	}
@@ -370,19 +430,13 @@ class SitebossController extends ControllerBase
     {
 
 		echo 'The post siteboss id ' . $sid . '<br>' ;
-		//$name = $this->request->getPost('hpic1');
+		$radd = 'siteboss/control/' . $sid;
 		$p = $this->request->getPost();
 		foreach ($p as $key=>$value) {
 			if(empty(trim($value)))
 			{
-				//$ImgId = substr($key, 4);			
-				//echo 'The key : ' . $ImgId . '<br>';
-				$rot = explode('_',$key);
-				foreach($rot as $k=>$v)
-				{
-					echo '<br>Key : ' . $k . ' value : ' . $v . ' <br>'; 
-				}
-
+				$this->flash->error("All photos must have a valid image");
+				return $this->response->redirect($radd);
 			}else
 			{
 								
@@ -394,9 +448,10 @@ class SitebossController extends ControllerBase
 				
 				$theimg = Image::findFirstById($rot[2]);
 				
-				$theimg->datatype = $pieces[0];
+				$theimg->datatype = $rot[1] . '_' .$pieces[0];
 				$theimg->data = $decode;
 				
+				echo '<br> '. strlen($pieces[1]) . ' <br>';
 				if($theimg->save() == true)
 				{
 					echo '<br> Save the image : ' . $rot[2] . ' <br>';
